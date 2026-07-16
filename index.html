@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galactic Conquest PDA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0e17;
+      font-family: 'Share Tech Mono', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse at center, rgba(30,60,90,0.4) 0%, rgba(10,14,23,1) 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px);
+    }
+
+    .pda-container {
+      width: 98vw; height: 96vh;
+      max-width: 1400px; max-height: 900px;
+      background: linear-gradient(145deg, #1a1f2e, #0f1319);
+      border: 2px solid #3a4a6b;
+      border-radius: 15px;
+      box-shadow: 0 0 40px rgba(0,150,255,0.2), inset 0 0 60px rgba(0,0,0,0.5), 0 20px 60px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+
+    .scanline {
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: rgba(0,255,100,0.1);
+      animation: scan 3s linear infinite;
+      pointer-events: none; z-index: 100;
+    }
+
+    @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+    .header {
+      background: linear-gradient(180deg, #1e2a3a, #151d28);
+      border-bottom: 2px solid #4a6fa5;
+      padding: 10px 25px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: #7eb8da;
+      text-shadow: 0 0 10px rgba(100,180,255,0.5);
+      z-index: 5; flex-shrink: 0;
+      min-height: 50px;
+    }
+
+    .header-left {
+      display: flex; align-items: center; gap: 20px;
+    }
+
+    .subtitle {
+      font-size: 18px; letter-spacing: 2px; color: #b8dff0;
+    }
+
+    .resources-bar {
+      background: linear-gradient(180deg, #131a25, #0d1119);
+      border-bottom: 1px solid #2a3a5a;
+      padding: 8px 25px;
+      display: flex; gap: 30px;
+      z-index: 5; flex-shrink: 0;
+    }
+
+    .resource {
+      display: flex; align-items: center; gap: 10px;
+      color: #8ab4d6; font-size: 13px;
+    }
+
+    .resource-value {
+      font-size: 16px; font-weight: bold; color: #b8dff0;
+      text-shadow: 0 0 8px rgba(100,180,255,0.5);
+    }
+
+    .main-content {
+      display: flex; flex: 1; overflow: hidden; z-index: 5; position: relative;
+    }
+
+    .galaxy-map {
+      flex: 1;
+      background: radial-gradient(ellipse at center, #0d1b2a 0%, #060b14 100%);
+      position: relative; overflow: hidden;
+      border-right: 1px solid #2a3a5a;
+    }
+
+    #galaxy-canvas { display: block; width: 100%; height: 100%; }
+
+    .star-bg {
+      position: absolute; width: 2px; height: 2px;
+      background: white; border-radius: 50%;
+      animation: twinkle 2s infinite;
+      pointer-events: none; z-index: 1;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; } 50% { opacity: 1; }
+    }
+
+    /* ========== ПОШАГОВАЯ БИТВА ========== */
+    #battle-overlay {
+      display: none; position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(5, 8, 15, 0.95);
+      z-index: 50; justify-content: center; align-items: center;
+    }
+
+    #battle-box {
+      background: rgba(10, 18, 30, 0.98);
+      border: 2px solid #4a6fa5; border-radius: 10px;
+      padding: 15px; width: 800px; max-height: 80vh;
+      display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 0 60px rgba(79, 195, 247, 0.3);
+    }
+
+    #battle-header {
+      display: flex; justify-content: space-between;
+      border-bottom: 1px solid #2a3a5a; padding-bottom: 6px;
+      font-size: 12px; color: #7eb8da;
+    }
+
+    #battle-turn-info {
+      text-align: center; font-size: 14px; color: #ffd700;
+      padding: 5px; background: rgba(255,215,0,0.1);
+      border-radius: 4px;
+    }
+
+    #battle-field {
+      display: flex; gap: 20px; min-height: 300px;
+    }
+
+    .battle-side {
+      flex: 1; border: 1px solid #2a3a5a; border-radius: 8px;
+      padding: 10px; background: rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .battle-side.ally { border-color: #4fc3f7; }
+    .battle-side.enemy { border-color: #ff5252; }
+
+    .battle-side-title {
+      text-align: center; font-size: 14px; font-weight: bold;
+      padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .battle-side.ally .battle-side-title { color: #4fc3f7; }
+    .battle-side.enemy .battle-side-title { color: #ff5252; }
+
+    .battle-units-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+      flex: 1; align-content: start;
+    }
+
+    .battle-unit-card {
+      background: rgba(20,28,40,0.9);
+      border: 1px solid #3a4a6b;
+      border-radius: 6px; padding: 8px; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+      position: relative;
+    }
+
+    .battle-unit-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(100,150,255,0.4);
+    }
+
+    .battle-unit-card.selected {
+      border-color: #ffd700;
+      box-shadow: 0 0 20px rgba(255,215,0,0.5);
+    }
+
+    .battle-unit-card.dead {
+      opacity: 0.3; pointer-events: none;
+    }
+
+    .unit-icon { font-size: 28px; margin-bottom: 4px; }
+    .unit-name { font-size: 10px; color: #b8dff0; margin-bottom: 2px; }
+    .unit-hp-bar {
+      width: 100%; height: 4px; background: #2a2a2a;
+      border-radius: 2px; margin: 4px 0; overflow: hidden;
+    }
+    .unit-hp-fill { height: 100%; background: #4ae04a; transition: width 0.3s; }
+    .unit-hp-fill.low { background: #ff5252; }
+    .unit-stats { font-size: 9px; color: #8ab4d6; }
+
+    .battle-actions {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+    }
+
+    .btn-battle {
+      flex: 1; padding: 8px;
+      border: 1px solid #4a6fa5;
+      background: linear-gradient(180deg, #1e3050, #0f1e30);
+      color: #b8dff0;
+      font-family: 'Share Tech Mono', monospace; font-size: 11px;
+      cursor: pointer; border-radius: 4px;
+      transition: all 0.2s; text-transform: uppercase;
+      min-width: 100px;
+    }
+
+    .btn-battle:hover:not(:disabled) {
+      background: #2a4a7f; border-color: #7eb8da;
+      box-shadow: 0 0 15px rgba(100,150,255,0.4);
+    }
+
+    .btn-battle:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-battle.attack-btn {
+      border-color: #8a4a4a;
+      background: linear-gradient(180deg, #502020, #301010);
+      color: #ffaaaa;
+    }
+
+    .btn-battle.attack-btn:hover:not(:disabled) {
+      border-color: #ff6a6a;
+      box-shadow: 0 0 15px rgba(255,100,100,0.4);
+    }
+
+    .btn-battle.gold-btn {
+      border-color: #ffb300;
+      background: linear-gradient(180deg, #3a2a10, #1a1005);
+      color: #ffb300;
+    }
+
+    .battle-log {
+      height: 80px; overflow-y: auto;
+      border: 1px solid #2a3a5a; border-radius: 4px;
+      padding: 8px; font-size: 10px; color: #8ab4d6;
+      background: rgba(5,10,15,0.9);
+      margin-top: 8px;
+    }
+
+    /* ========== МОДАЛЬНЫЕ ОКНА ========== */
+    #story-overlay {
+      display: none; position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(5, 8, 15, 0.9);
+      z-index: 60; justify-content: center; align-items: center;
+    }
+
+    #story-box {
+      background: rgba(10, 18, 30, 0.98);
+      border: 2px solid #ffb300; border-radius: 10px;
+      padding: 20px; width: 500px;
+      text-align: center; color: #b8dff0;
+      box-shadow: 0 0 60px rgba(255, 215, 0, 0.3);
+    }
+
+    #story-box h3 { color: #ffd700; margin-bottom: 15px; }
+    #story-box p { font-size: 13px; line-height: 1.6; margin-bottom: 15px; }
+
+    .story-choices { display: flex; flex-direction: column; gap: 8px; }
+
+    .btn-story {
+      padding: 12px; border: 1px solid #4a6fa5;
+      background: linear-gradient(180deg, #1e3050, #0f1e30);
+      color: #b8dff0;
+      font-family: 'Share Tech Mono', monospace; font-size: 12px;
+      cursor: pointer; border-radius: 6px; transition: all 0.3s;
+    }
+
+    .btn-story:hover {
+      background: #2a4a7f; border-color: #7eb8da;
+      box-shadow: 0 0 20px rgba(100,150,255,0.4);
+    }
+
+    #game-over-overlay {
+      display: none; position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(5, 8, 15, 0.95);
+      z-index: 70; justify-content: center; align-items: center;
+    }
+
+    #game-over-box {
+      text-align: center; color: #b8dff0; padding: 30px;
+      border: 2px solid #4a6fa5; border-radius: 10px;
+      background: rgba(10, 18, 30, 0.98);
+    }
+
+    #game-over-box h2 { font-size: 28px; margin-bottom: 15px; }
+    #game-over-box .rating { font-size: 48px; color: #ffd700; margin: 15px 0; }
+
+    /* ========== ПАНЕЛЬ ========== */
+    .side-panel {
+      width: 350px;
+      background: rgba(15,20,30,0.97);
+      display: flex; flex-direction: column; gap: 10px;
+      padding: 15px; overflow-y: auto; flex-shrink: 0;
+      position: absolute; right: 0; top: 0; bottom: 0; z-index: 5;
+    }
+
+    .panel-section {
+      background: rgba(20,28,40,0.8);
+      border: 1px solid #2a3a5a; border-radius: 10px; padding: 12px;
+    }
+
+    .section-title {
+      color: #7eb8da; font-size: 13px; letter-spacing: 2px;
+      margin-bottom: 10px; text-transform: uppercase;
+      border-bottom: 1px solid #3a4a6b; padding-bottom: 6px;
+    }
+
+    .unit-recruit-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .unit-recruit-card {
+      background: linear-gradient(135deg, #1a2540, #0f1a2e);
+      border: 1px solid #3a5a8a; border-radius: 6px;
+      padding: 8px; cursor: pointer; transition: all 0.3s;
+      text-align: center; font-size: 10px;
+    }
+
+    .unit-recruit-card:hover {
+      border-color: #7eb8da;
+      box-shadow: 0 0 15px rgba(100,150,255,0.3);
+    }
+
+    .unit-recruit-card .recruit-icon { font-size: 24px; }
+    .unit-recruit-card .recruit-name { color: #b8dff0; margin: 4px 0; }
+    .unit-recruit-card .recruit-cost { color: #ffd700; font-size: 9px; }
+
+    .evolution-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+
+    .evo-card {
+      background: linear-gradient(135deg, #1a2540, #0f1a2e);
+      border: 1px solid #3a5a8a; border-radius: 6px;
+      padding: 10px; cursor: pointer; transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+
+    .evo-card:hover:not(.purchased):not(.locked) {
+      border-color: #7eb8da;
+      box-shadow: 0 0 20px rgba(100,150,255,0.3);
+      transform: translateY(-2px);
+    }
+
+    .evo-card.purchased {
+      opacity: 0.5; border-color: #2a4a2a;
+      pointer-events: none;
+    }
+
+    .evo-card.locked {
+      opacity: 0.3; border-color: #3a3a3a;
+      cursor: not-allowed; filter: grayscale(1);
+    }
+
+    .evo-card.purchased::after {
+      content: '✓'; position: absolute; top: 5px; right: 10px;
+      color: #4ae04a; font-size: 18px;
+    }
+
+    .evo-card.locked::after {
+      content: '🔒'; position: absolute; top: 5px; right: 10px;
+      font-size: 14px;
+    }
+
+    .evo-name { color: #b8dff0; font-size: 12px; margin-bottom: 6px; }
+    .evo-cost { color: #ffd700; font-size: 10px; }
+
+    .action-buttons {
+      display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+    }
+
+    .btn {
+      flex: 1; padding: 8px 12px; min-width: 60px;
+      border: 1px solid #4a6fa5;
+      background: linear-gradient(180deg, #1e3050, #0f1e30);
+      color: #b8dff0;
+      font-family: 'Share Tech Mono', monospace; font-size: 11px;
+      cursor: pointer; border-radius: 6px; transition: all 0.3s;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: linear-gradient(180deg, #2a4a7f, #1a3050);
+      border-color: #7eb8da;
+      box-shadow: 0 0 20px rgba(100,150,255,0.4);
+    }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+
+    .btn.attack {
+      border-color: #8a4a4a;
+      background: linear-gradient(180deg, #502020, #301010);
+      color: #ffaaaa;
+    }
+
+    .btn.save {
+      border-color: #4a8a4a;
+      background: linear-gradient(180deg, #1a3020, #0a1a10);
+      color: #aaffaa;
+    }
+
+    .log-panel {
+      background: rgba(5,10,15,0.9);
+      border: 1px solid #2a3a5a; border-radius: 6px;
+      padding: 10px; color: #8ab4d6; font-size: 11px;
+      height: 80px; overflow-y: auto; line-height: 1.5;
+    }
+
+    .planet-info-box {
+      display: flex; flex-direction: column; gap: 2px;
+      font-size: 11px; color: #8ab4d6;
+    }
+
+    .planet-info-box span { color: #b8dff0; font-weight: bold; }
+    .highlight-gold { color: #ffd700; }
+    .highlight-special { color: #ffa500; }
+
+    .garrison-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+      margin-top: 6px;
+    }
+
+    .garrison-unit {
+      background: rgba(30,40,60,0.8);
+      border: 1px solid #3a4a6b;
+      border-radius: 4px; padding: 4px; text-align: center;
+      font-size: 9px; color: #8ab4d6;
+    }
+
+    .strength-bar {
+      width: 100%; height: 20px; background: #1a1a2e;
+      border: 1px solid #2a3a5a; border-radius: 4px;
+      overflow: hidden; margin-top: 8px;
+    }
+
+    .strength-fill {
+      height: 100%; background: linear-gradient(90deg, #4fc3f7, #2a4a7f);
+      transition: width 0.5s;
+      display: flex; align-items: center; padding-left: 8px;
+      font-size: 10px; color: white;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0e17; }
+    ::-webkit-scrollbar-thumb { background: #3a4a6b; border-radius: 3px; }
+
+    .controls-hint {
+      position: absolute; bottom: 15px; left: 20px;
+      z-index: 6; color: rgba(255,255,255,0.2);
+      font-size: 10px; pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+<div class="pda-container">
+  <div class="scanline"></div>
+  
+  <div class="header">
+    <div class="header-left">
+      <div class="subtitle">СЕКТОР КОПРУЛУ</div>
+    </div>
+    <div style="color: #7eb8da; font-size: 14px;">
+      День <span id="turnCounter">1</span> | Волна <span id="waveCounter">0</span>
+    </div>
+  </div>
+
+  <div class="resources-bar">
+    <div class="resource">
+      <span class="resource-icon">💎</span>
+      <span class="resource-value" id="creditsValue">800</span>
+      <span>Кредиты</span>
+    </div>
+    <div class="resource">
+      <span class="resource-icon">🧬</span>
+      <span class="resource-value" id="evoPointsValue">3</span>
+      <span>Эволюция</span>
+    </div>
+    <div class="resource">
+      <span class="resource-icon">🪐</span>
+      <span class="resource-value" id="planetCountValue">2/15</span>
+      <span>Планет</span>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="galaxy-map" id="galaxyMap">
+      <canvas id="galaxy-canvas"></canvas>
+    </div>
+
+    <!-- ПАНЕЛЬ -->
+    <div class="side-panel">
+      <div class="panel-section">
+        <div class="section-title">🚀 Планета</div>
+        <div class="planet-info-box">
+          <div>🎯 <span id="selectedPlanet">Нажмите ПКМ</span></div>
+          <div>🔵 <span id="selectedOwner">-</span></div>
+          <div class="highlight-special" id="selectedSpecial" style="font-size:10px;"></div>
+        </div>
+        <div style="color:#7a8a9a;font-size:10px;margin-top:4px;">Гарнизон:</div>
+        <div class="garrison-grid" id="garrisonGrid">
+          <div class="garrison-unit">Пусто</div>
+        </div>
+        <div class="strength-bar">
+          <div class="strength-fill" id="strengthFill" style="width: 30%;">Сила: 30%</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">🏗 Вербовка</div>
+        <div class="unit-recruit-grid" id="recruitGrid"></div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">🧬 Эволюция</div>
+        <div class="evolution-grid" id="evolutionGrid"></div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">⚔ Действия</div>
+        <div class="action-buttons">
+          <button class="btn attack" id="btnAttack">⚔ Атаковать</button>
+          <button class="btn" id="btnNextTurn">⏭ Следующий ход</button>
+        </div>
+        <div class="action-buttons">
+          <button class="btn save" id="btnSave">💾 Сохранить</button>
+          <button class="btn save" id="btnLoad" style="border-color:#4a4a8a;color:#aaaaff;">📂 Загрузить</button>
+        </div>
+        <div style="font-size: 9px; color: #7a8a9a; margin-top: 4px; text-align: center;">
+          [ЛКМ] Двигать | [ПКМ] Выбрать | [Колёсико] Зум | [A] Атака | [Пробел] Ход
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="section-title">📡 Журнал</div>
+        <div class="log-panel" id="logPanel">Сектор Копрулу ждет ваших приказов...</div>
+      </div>
+    </div>
+
+    <!-- БИТВА -->
+    <div id="battle-overlay">
+      <div id="battle-box">
+        <div id="battle-header">
+          <span id="battle-title">СРАЖЕНИЕ</span>
+          <span>Ход: <span id="battle-round">1</span></span>
+        </div>
+        <div id="battle-turn-info">Ваш ход — выберите действие</div>
+        <div id="battle-field">
+          <div class="battle-side ally">
+            <div class="battle-side-title">АЛЬЯНС</div>
+            <div class="battle-units-grid" id="allyUnits"></div>
+          </div>
+          <div class="battle-side enemy">
+            <div class="battle-side-title">ВРАГ</div>
+            <div class="battle-units-grid" id="enemyUnits"></div>
+          </div>
+        </div>
+        <div class="battle-actions">
+          <button class="btn-battle attack-btn" id="btnBattleAttack" disabled>⚔ Атаковать выбранным</button>
+          <button class="btn-battle gold-btn" id="btnBattleEndTurn">⏭ Закончить ход</button>
+          <button class="btn-battle" id="btnBattleRetreat" style="border-color:#5a4a4a;color:#8a7a7a;">🏃 Отступить</button>
+        </div>
+        <div class="battle-log" id="battleLog"></div>
+      </div>
+    </div>
+
+    <!-- СЮЖЕТ -->
+    <div id="story-overlay">
+      <div id="story-box"></div>
+    </div>
+
+    <!-- КОНЕЦ ИГРЫ -->
+    <div id="game-over-overlay">
+      <div id="game-over-box">
+        <h2 id="game-over-title">ИГРА ОКОНЧЕНА</h2>
+        <div class="rating" id="game-over-rating">A</div>
+        <p id="game-over-stats"></p>
+        <button class="btn" onclick="location.reload()" style="margin-top:20px;padding:12px 30px;">🔄 Новая игра</button>
+      </div>
+    </div>
+
+    <div class="controls-hint">[ЛКМ] Двигать | [ПКМ] Выбрать | [Колёсико] Зум | [A] Атака | [Пробел] Ход</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('galaxy-canvas');
+  const ctx = canvas.getContext('2d');
+  const galaxyMap = document.getElementById('galaxyMap');
+
+  let W, H, cx, cy;
+  function resizeCanvas() {
+    W = galaxyMap.clientWidth; H = galaxyMap.clientHeight;
+    canvas.width = W; canvas.height = H;
+    cx = W / 2; cy = H / 2;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // ============ ЮНИТЫ (Starcraft 2 стиль) ============
+  const UNIT_TYPES = {
+    marine: {
+      name: 'Пехотинец', icon: '👨‍🚀', class: 'infantry',
+      hp: 40, attack: 8, defense: 2, range: 'front',
+      cost: 30, buildTime: 1,
+      desc: 'Базовая пехота',
+      attackType: 'kinetic'
+    },
+    marauder: {
+      name: 'Мародер', icon: '🦾', class: 'heavy_infantry',
+      hp: 70, attack: 12, defense: 5, range: 'front',
+      cost: 60, buildTime: 1,
+      desc: 'Тяжелая пехота',
+      attackType: 'explosive'
+    },
+    ghost: {
+      name: 'Призрак', icon: '🥷', class: 'specialist',
+      hp: 30, attack: 20, defense: 1, range: 'back',
+      cost: 80, buildTime: 2,
+      desc: 'Снайпер, игнорирует защиту',
+      attackType: 'piercing', special: 'ignore_defense'
+    },
+    hellion: {
+      name: 'Хеллион', icon: '🏍️', class: 'vehicle',
+      hp: 50, attack: 10, defense: 3, range: 'front',
+      cost: 50, buildTime: 1,
+      desc: 'Быстрая атака',
+      attackType: 'fire', special: 'splash'
+    },
+    siege_tank: {
+      name: 'Осадный танк', icon: '🚛', class: 'heavy_vehicle',
+      hp: 100, attack: 25, defense: 8, range: 'back',
+      cost: 120, buildTime: 3,
+      desc: 'Мощная дальняя атака',
+      attackType: 'explosive'
+    },
+    viking: {
+      name: 'Викинг', icon: '✈️', class: 'air',
+      hp: 45, attack: 15, defense: 2, range: 'back',
+      cost: 90, buildTime: 2,
+      desc: 'Воздушная поддержка',
+      attackType: 'kinetic', special: 'anti_air'
+    },
+    battlecruiser: {
+      name: 'Крейсер', icon: '🚀', class: 'capital',
+      hp: 200, attack: 35, defense: 12, range: 'back',
+      cost: 250, buildTime: 5,
+      desc: 'Флагман флота',
+      attackType: 'energy', special: 'yamoto'
+    },
+    // Вражеские юниты
+    zergling: {
+      name: 'Зерглинг', icon: '👾', class: 'infantry',
+      hp: 25, attack: 6, defense: 1, range: 'front',
+      cost: 0, buildTime: 0,
+      desc: 'Быстрый и дешевый',
+      attackType: 'kinetic'
+    },
+    hydralisk: {
+      name: 'Гидралиск', icon: '🐍', class: 'infantry',
+      hp: 55, attack: 14, defense: 3, range: 'back',
+      cost: 0, buildTime: 0,
+      desc: 'Дальнобойный',
+      attackType: 'piercing'
+    },
+    roach: {
+      name: 'Таракан', icon: '🪳', class: 'heavy_infantry',
+      hp: 90, attack: 10, defense: 7, range: 'front',
+      cost: 0, buildTime: 0,
+      desc: 'Живучий танк',
+      attackType: 'kinetic'
+    },
+    mutalisk: {
+      name: 'Муталиск', icon: '🦇', class: 'air',
+      hp: 60, attack: 18, defense: 3, range: 'back',
+      cost: 0, buildTime: 0,
+      desc: 'Воздушный хищник',
+      attackType: 'kinetic', special: 'bounce'
+    },
+    ultralisk: {
+      name: 'Ультралиск', icon: '🦣', class: 'heavy_vehicle',
+      hp: 180, attack: 30, defense: 10, range: 'front',
+      cost: 0, buildTime: 0,
+      desc: 'Разрушительный монстр',
+      attackType: 'explosive', special: 'cleave'
+    }
+  };
+
+  // ============ ПЛАНЕТЫ ============
+  const PLANET_SPECIALS = {
+    1: { name: 'Инферно', bonus: 'credits', value: 3, desc: '+3💰/ход' },
+    2: { name: 'Теплица', bonus: 'freeMarine', value: 2, desc: '+2 Пехотинца при захвате' },
+    3: { name: 'Колыбель', bonus: 'defense', value: 3, desc: '+3🛡 защиты гарнизону' },
+    4: { name: 'Кузня', bonus: 'attack', value: 2, desc: '+2⚔ атаки' },
+    11: { name: 'Аванпост', bonus: 'freeTank', value: 1, desc: '+1 Танк при захвате' },
+    5: { name: 'Шторм', bonus: 'slowEnemy', value: 3, desc: 'Враг теряет 3 ед. при атаке' },
+    6: { name: 'Кольца', bonus: 'credits', value: 5, desc: '+5💰/ход' },
+    7: { name: 'Ледяной', bonus: 'freeGhost', value: 1, desc: '+1 Призрак при захвате' },
+    8: { name: 'Синий', bonus: 'evoOnCapture', value: 1, desc: '+1🧬 при захвате' },
+    14: { name: 'Рубеж', bonus: 'doubleDefense', value: true, desc: 'Удвоенная защита' },
+    9: { name: 'Врата', bonus: 'evoOnCapture', value: 2, desc: '+2🧬 при захвате' },
+    12: { name: 'Обломки', bonus: 'credits', value: 8, desc: '+8💰/ход' },
+    13: { name: 'Тьма', bonus: 'cloak', value: true, desc: 'Невидимость гарнизона' }
+  };
+
+  const planets = [
+    { id: 0, name: 'СОЛНЦЕ', dist: 0, ang: 0, speed: 0, size: 34, type: 'star', garrison: [], special: null },
+    { id: 1, name: 'МЕРКУРИЙ', dist: 80, ang: 0, speed: 0.04, size: 8, type: 'neutral', garrison: [], special: PLANET_SPECIALS[1] },
+    { id: 2, name: 'ВЕНЕРА', dist: 135, ang: 1.8, speed: 0.015, size: 12, type: 'neutral', garrison: [], special: PLANET_SPECIALS[2] },
+    { id: 3, name: 'ЗЕМЛЯ', dist: 185, ang: 3.2, speed: 0.01, size: 14, type: 'ally', garrison: [], special: PLANET_SPECIALS[3] },
+    { id: 4, name: 'МАРС', dist: 240, ang: 4.5, speed: 0.008, size: 10, type: 'ally', garrison: [], special: PLANET_SPECIALS[4] },
+    { id: 11, name: 'ЦЕРЕРА', dist: 275, ang: 1.0, speed: 0.004, size: 6, type: 'neutral', garrison: [], special: PLANET_SPECIALS[11] },
+    { id: 5, name: 'ЮПИТЕР', dist: 320, ang: 5.8, speed: 0.005, size: 24, type: 'neutral', garrison: [], special: PLANET_SPECIALS[5] },
+    { id: 6, name: 'САТУРН', dist: 400, ang: 0.9, speed: 0.003, size: 20, type: 'neutral', garrison: [], special: PLANET_SPECIALS[6] },
+    { id: 7, name: 'УРАН', dist: 480, ang: 2.3, speed: 0.002, size: 16, type: 'neutral', garrison: [], special: PLANET_SPECIALS[7] },
+    { id: 8, name: 'НЕПТУН', dist: 560, ang: 4.1, speed: 0.0015, size: 16, type: 'neutral', garrison: [], special: PLANET_SPECIALS[8] },
+    { id: 12, name: 'ХАУМЕА', dist: 600, ang: 0.5, speed: 0.001, size: 5, type: 'neutral', garrison: [], special: PLANET_SPECIALS[12] },
+    { id: 13, name: 'МАКЕМАКЕ', dist: 620, ang: 2.0, speed: 0.001, size: 5, type: 'neutral', garrison: [], special: PLANET_SPECIALS[13] },
+    { id: 9, name: 'ПЛУТОН', dist: 650, ang: 5.2, speed: 0.001, size: 6, type: 'neutral', garrison: [], special: PLANET_SPECIALS[9] },
+    { id: 14, name: 'ЭРИДА', dist: 680, ang: 3.5, speed: 0.0008, size: 6, type: 'neutral', garrison: [], special: PLANET_SPECIALS[14] },
+    { id: 10, name: 'X (ВРАГ)', dist: 760, ang: 1.3, speed: 0.0005, size: 30, type: 'enemy', garrison: [], special: null }
+  ];
+
+  // Инициализация гарнизонов
+  function initGarrisons() {
+    planets.forEach(p => {
+      p.garrison = [];
+    });
+    // Земля
+    const earth = planets.find(p => p.id === 3);
+    earth.garrison = [
+      { type: 'marine', hp: 40, maxHp: 40 },
+      { type: 'marine', hp: 40, maxHp: 40 },
+      { type: 'marine', hp: 40, maxHp: 40 },
+      { type: 'marauder', hp: 70, maxHp: 70 },
+      { type: 'viking', hp: 45, maxHp: 45 }
+    ];
+    // Марс
+    const mars = planets.find(p => p.id === 4);
+    mars.garrison = [
+      { type: 'marine', hp: 40, maxHp: 40 },
+      { type: 'hellion', hp: 50, maxHp: 50 }
+    ];
+    // Враг
+    const enemy = planets.find(p => p.id === 10);
+    enemy.garrison = [
+      { type: 'zergling', hp: 25, maxHp: 25 },
+      { type: 'zergling', hp: 25, maxHp: 25 },
+      { type: 'zergling', hp: 25, maxHp: 25 },
+      { type: 'hydralisk', hp: 55, maxHp: 55 },
+      { type: 'hydralisk', hp: 55, maxHp: 55 },
+      { type: 'roach', hp: 90, maxHp: 90 },
+      { type: 'mutalisk', hp: 60, maxHp: 60 },
+      { type: 'ultralisk', hp: 180, maxHp: 180 }
+    ];
+    // Нейтральные планеты
+    planets.filter(p => p.type === 'neutral').forEach(p => {
+      const count = Math.floor(Math.random() * 3) + 1;
+      for (let i = 0; i < count; i++) {
+        p.garrison.push({ type: 'zergling', hp: 25, maxHp: 25 });
+      }
+    });
+  }
+
+  // ============ ЭВОЛЮЦИЯ ============
+  const EVOLUTION = [
+    { id: 'armor1', name: '🛡 Обшивка', cost: 2, requires: null, desc: '+2 Защиты', effect: { defense: 2 } },
+    { id: 'weapon1', name: '💥 Кинетика', cost: 2, requires: null, desc: '+2 Атаки', effect: { attack: 2 } },
+    { id: 'armor2', name: '🌀 Щиты', cost: 4, requires: 'armor1', desc: '+4 Защиты', effect: { defense: 4 } },
+    { id: 'weapon2', name: '🔥 Плазма', cost: 4, requires: 'weapon1', desc: '+4 Атаки', effect: { attack: 4 } },
+    { id: 'engine1', name: '⚡ Форсаж', cost: 3, requires: null, desc: '+1 юнит на всех', effect: { globalUnit: 1 } },
+    { id: 'armor3', name: '👻 Маскировка', cost: 6, requires: 'armor2', desc: '+6 Защиты', effect: { defense: 6 } },
+    { id: 'weapon3', name: '☠ Антиматерия', cost: 6, requires: 'weapon2', desc: '+6 Атаки', effect: { attack: 6 } },
+    { id: 'scanner', name: '📡 Сканер', cost: 4, requires: null, desc: 'Враг слабее на 15%', effect: { enemyDebuff: 0.15 } }
+  ];
+
+  // ============ СОСТОЯНИЕ ============
+  let gameState = {
+    credits: 800, turn: 1, wave: 0, evolutionPoints: 3,
+    selectedPlanetId: 3,
+    modifiers: { attack: 0, defense: 0, enemyDebuff: 0 },
+    purchasedUpgrades: [],
+    gameOver: false, storyEventsTriggered: []
+  };
+
+  let flyingUnits = []; // Вместо просто числа — массив юнитов для атаки
+  let battleState = null;
+  let isAttackMode = false;
+
+  // ============ ЗВЕЗДЫ ============
+  function createStars() {
+    const container = document.getElementById('galaxyMap');
+    container.querySelectorAll('.star-bg').forEach(s => s.remove());
+    for (let i = 0; i < 120; i++) {
+      const star = document.createElement('div');
+      star.className = 'star-bg';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 2 + 's';
+      container.appendChild(star);
+    }
+  }
+
+  // ============ КАМЕРА ============
+  let cam = { x: 0, y: 0 };
+  let zoom = 1.0;
+  const MIN_ZOOM = 0.4, MAX_ZOOM = 3.0;
+  let isDraggingCam = false;
+  let dragStartMouse = { x: 0, y: 0 };
+  let dragStartCam = { x: 0, y: 0 };
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0 && !battleState) {
+      isDraggingCam = true;
+      dragStartMouse.x = e.clientX;
+      dragStartMouse.y = e.clientY;
+      dragStartCam.x = cam.x;
+      dragStartCam.y = cam.y;
+      canvas.style.cursor = 'grabbing';
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDraggingCam) {
+      cam.x = dragStartCam.x - (e.clientX - dragStartMouse.x) / zoom;
+      cam.y = dragStartCam.y - (e.clientY - dragStartMouse.y) / zoom;
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDraggingCam = false;
+    canvas.style.cursor = 'default';
+  });
+
+  galaxyMap.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom + delta));
+  });
+
+  // ============ ОТРИСОВКА ============
+  const PLANET_SKINS = {
+    0: { col1: '#ffaa00', col2: '#ff6600' },
+    1: { col1: '#e8a87c', col2: '#8a4a2a' },
+    2: { col1: '#f4a261', col2: '#a85a2a' },
+    3: { col1: '#4a9a8a', col2: '#1a5a4a' },
+    4: { col1: '#d84a2a', col2: '#7a2a1a' },
+    5: { col1: '#e9c46a', col2: '#b0883a' },
+    6: { col1: '#f4f1de', col2: '#a09a7a' },
+    7: { col1: '#8ecae6', col2: '#3a7a9a' },
+    8: { col1: '#457b9d', col2: '#1a3a5a' },
+    9: { col1: '#d5bdaf', col2: '#8a7a6a' },
+    10: { col1: '#d90429', col2: '#5a0020' },
+    11: { col1: '#8a8a7a', col2: '#4a4a3a' },
+    12: { col1: '#aaaaaa', col2: '#555555' },
+    13: { col1: '#999999', col2: '#444444' },
+    14: { col1: '#bbbbbb', col2: '#666666' }
+  };
+
+  function getGarrisonCount(planet) {
+    return planet.garrison.reduce((s, u) => s + (u.hp > 0 ? 1 : 0), 0);
+  }
+
+  function getGarrisonPower(planet) {
+    return planet.garrison.reduce((s, u) => {
+      if (u.hp <= 0) return s;
+      const type = UNIT_TYPES[u.type];
+      return s + type.attack + type.defense + u.hp / u.maxHp * 10;
+    }, 0);
+  }
+
+  function drawGalaxy() {
+    ctx.clearRect(0, 0, W, H);
+    const offX = cam.x * zoom;
+    const offY = cam.y * zoom;
+    const cx_canvas = cx - offX;
+    const cy_canvas = cy - offY;
+
+    // Орбиты
+    planets.forEach(p => {
+      if (p.id === 0) return;
+      const r = p.dist * zoom;
+      ctx.beginPath();
+      ctx.arc(cx_canvas, cy_canvas, r, 0, Math.PI * 2);
+      ctx.strokeStyle = p.type === 'ally' ? 'rgba(79,195,247,0.08)' :
+                        p.type === 'enemy' ? 'rgba(255,82,82,0.08)' :
+                        'rgba(255,255,255,0.03)';
+      ctx.setLineDash([3, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+
+    // Планеты
+    planets.forEach(p => {
+      if (p.id === 0) {
+        ctx.shadowBlur = 80 * zoom;
+        ctx.shadowColor = '#ffaa00';
+        ctx.beginPath();
+        ctx.arc(cx_canvas, cy_canvas, p.size * zoom, 0, Math.PI * 2);
+        const grd = ctx.createRadialGradient(cx_canvas, cy_canvas, 0, cx_canvas, cy_canvas, p.size * zoom);
+        grd.addColorStop(0, '#ffffff');
+        grd.addColorStop(0.3, '#ffd700');
+        grd.addColorStop(1, '#ff6600');
+        ctx.fillStyle = grd;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        return;
+      }
+
+      p.ang += p.speed * 0.04;
+      const x = cx_canvas + p.dist * zoom * Math.cos(p.ang);
+      const y = cy_canvas + p.dist * zoom * Math.sin(p.ang);
+      p.x = cx + p.dist * Math.cos(p.ang);
+      p.y = cy + p.dist * Math.sin(p.ang);
+
+      const skin = PLANET_SKINS[p.id] || { col1: '#888', col2: '#444' };
+      const r = p.size * zoom;
+
+      ctx.shadowBlur = (p.type === 'ally' ? 25 : p.type === 'enemy' ? 30 : 5) * zoom;
+      ctx.shadowColor = p.type === 'ally' ? '#4fc3f7' : p.type === 'enemy' ? '#ff5252' : 'rgba(255,255,255,0.3)';
+
+      const grd = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+      grd.addColorStop(0, skin.col1);
+      grd.addColorStop(1, skin.col2);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      if (p.id === gameState.selectedPlanetId) {
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3 * zoom;
+        ctx.shadowBlur = 25 * zoom;
+        ctx.shadowColor = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(x, y, r + 5 * zoom, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.fillStyle = '#b8dff0';
+      ctx.font = `bold ${Math.max(9, 12 * zoom)}px Share Tech Mono`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(p.name, x, y - r - 4);
+
+      const count = getGarrisonCount(p);
+      ctx.fillStyle = p.type === 'ally' ? '#4fc3f7' : p.type === 'enemy' ? '#ff5252' : '#8ab4d6';
+      ctx.font = `${Math.max(8, 11 * zoom)}px Share Tech Mono`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(`⚔${count}`, x, y + r + 5);
+
+      if (p.special) {
+        ctx.fillStyle = '#ffa500';
+        ctx.font = `${Math.max(6, 8 * zoom)}px Share Tech Mono`;
+        ctx.fillText('★', x + r + 8, y - r + 4);
+      }
+    });
+
+    // Летящие юниты
+    flyingUnits.forEach(f => {
+      const fx = cx_canvas + (f.x - cx) * zoom;
+      const fy = cy_canvas + (f.y - cy) * zoom;
+      
+      const unitType = UNIT_TYPES[f.unitType];
+      ctx.beginPath();
+      ctx.arc(fx, fy, 5 * zoom, 0, Math.PI * 2);
+      ctx.fillStyle = f.owner === 'ally' ? '#4fc3f7' : '#ff5252';
+      ctx.shadowBlur = 20 * zoom;
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      ctx.fillStyle = 'white';
+      ctx.font = `${Math.max(10, 14 * zoom)}px Share Tech Mono`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(unitType.icon, fx, fy);
+    });
+
+    updateUIStats();
+  }
+
+  // ============ ВЗАИМОДЕЙСТВИЕ ============
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (battleState || gameState.gameOver) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const wX = (mx - W / 2) / zoom + cx + cam.x;
+    const wY = (my - H / 2) / zoom + cy + cam.y;
+
+    let clickedPlanet = null;
+    for (let p of planets) {
+      if (p.id === 0) continue;
+      if (Math.hypot(wX - p.x, wY - p.y) < p.size + 5) {
+        clickedPlanet = p;
+        break;
+      }
+    }
+
+    if (clickedPlanet) {
+      if (isAttackMode) {
+        if (gameState.selectedPlanetId !== null && clickedPlanet.id !== gameState.selectedPlanetId) {
+          const sP = planets.find(p => p.id === gameState.selectedPlanetId);
+          if (sP && sP.type === 'ally' && sP.garrison.some(u => u.hp > 0)) {
+            // Отправляем половину гарнизона
+            const attackingUnits = [];
+            const remaining = [];
+            sP.garrison.forEach((u, i) => {
+              if (u.hp > 0 && attackingUnits.length < Math.ceil(sP.garrison.filter(x => x.hp > 0).length / 2)) {
+                attackingUnits.push({...u});
+                u.hp = 0; // Убираем с планеты
+              } else if (u.hp > 0) {
+                remaining.push(u);
+              }
+            });
+            sP.garrison = remaining;
+
+            attackingUnits.forEach(u => {
+              flyingUnits.push({
+                x: sP.x, y: sP.y,
+                tx: clickedPlanet.x, ty: clickedPlanet.y,
+                owner: 'ally', sId: sP.id, tId: clickedPlanet.id,
+                progress: 0, unitType: u.type, hp: u.hp, maxHp: u.maxHp
+              });
+            });
+
+            addLog(`🚀 ${attackingUnits.length} юнитов атакуют ${clickedPlanet.name}`);
+            isAttackMode = false;
+            document.getElementById('btnAttack').textContent = '⚔ Атаковать';
+            selectPlanet(sP.id);
+          }
+        }
+      } else {
+        selectPlanet(clickedPlanet.id);
+      }
+    }
+  });
+
+  function selectPlanet(id) {
+    gameState.selectedPlanetId = id;
+    const p = planets.find(pl => pl.id === id);
+    if (!p) return;
+
+    document.getElementById('selectedPlanet').textContent = p.name;
+    const owner = p.type === 'ally' ? 'Альянс' : p.type === 'enemy' ? 'Рой X' : 'Нейтральная';
+    document.getElementById('selectedOwner').textContent = owner;
+
+    const specialEl = document.getElementById('selectedSpecial');
+    if (p.special) {
+      specialEl.textContent = `★ ${p.special.name}: ${p.special.desc}`;
+    } else {
+      specialEl.textContent = '';
+    }
+
+    updateGarrisonDisplay();
+    updateRecruitGrid();
+  }
+
+  function updateGarrisonDisplay() {
+    const p = planets.find(pl => pl.id === gameState.selectedPlanetId);
+    if (!p) return;
+    const grid = document.getElementById('garrisonGrid');
+    grid.innerHTML = '';
+    
+    const aliveUnits = p.garrison.filter(u => u.hp > 0);
+    if (aliveUnits.length === 0) {
+      grid.innerHTML = '<div class="garrison-unit" style="grid-column:1/-1;">Нет юнитов</div>';
+    } else {
+      aliveUnits.forEach(u => {
+        const type = UNIT_TYPES[u.type];
+        const div = document.createElement('div');
+        div.className = 'garrison-unit';
+        div.innerHTML = `${type.icon} ${type.name}<br><small>HP:${u.hp}/${u.maxHp}</small>`;
+        grid.appendChild(div);
+      });
+    }
+  }
+
+  function updateRecruitGrid() {
+    const p = planets.find(pl => pl.id === gameState.selectedPlanetId);
+    const grid = document.getElementById('recruitGrid');
+    grid.innerHTML = '';
+
+    if (!p || p.type !== 'ally') {
+      grid.innerHTML = '<div style="grid-column:1/-1;color:#7a8a9a;text-align:center;font-size:10px;">Только на союзных планетах</div>';
+      return;
+    }
+
+    const recruitableUnits = ['marine', 'marauder', 'hellion', 'viking', 'siege_tank', 'ghost', 'battlecruiser'];
+    recruitableUnits.forEach(type => {
+      const ut = UNIT_TYPES[type];
+      const card = document.createElement('div');
+      card.className = 'unit-recruit-card';
+      card.innerHTML = `
+        <div class="recruit-icon">${ut.icon}</div>
+        <div class="recruit-name">${ut.name}</div>
+        <div class="recruit-cost">💎${ut.cost} | ⏱${ut.buildTime}х</div>
+      `;
+      card.addEventListener('click', () => recruitUnit(type));
+      grid.appendChild(card);
+    });
+  }
+
+  function recruitUnit(unitType) {
+    if (battleState || gameState.gameOver) return;
+    const p = planets.find(pl => pl.id === gameState.selectedPlanetId);
+    if (!p || p.type !== 'ally') return;
+    
+    const ut = UNIT_TYPES[unitType];
+    if (gameState.credits < ut.cost) return addLog('❌ Недостаточно кредитов!');
+
+    gameState.credits -= ut.cost;
+    p.garrison.push({ type: unitType, hp: ut.hp, maxHp: ut.hp });
+    addLog(`🏗 ${ut.name} завербован на ${p.name}`);
+    selectPlanet(p.id);
+    saveGame();
+  }
+
+  // ============ ЭВОЛЮЦИЯ ============
+  function renderEvolution() {
+    const grid = document.getElementById('evolutionGrid');
+    grid.innerHTML = '';
+
+    EVOLUTION.forEach(upg => {
+      const card = document.createElement('div');
+      card.className = 'evo-card';
+      if (gameState.purchasedUpgrades.includes(upg.id)) card.classList.add('purchased');
+      
+      const isLocked = upg.requires && !gameState.purchasedUpgrades.includes(upg.requires);
+      if (isLocked) card.classList.add('locked');
+      
+      const canBuy = !gameState.purchasedUpgrades.includes(upg.id) && 
+                     !isLocked && 
+                     gameState.evolutionPoints >= upg.cost;
+      
+      card.innerHTML = `
+        <div class="evo-name">${upg.name}</div>
+        <div style="font-size: 10px; color: #8ab4d6; margin-bottom: 6px;">${upg.desc}</div>
+        <div class="evo-cost">🧬 ${upg.cost}</div>
+      `;
+      
+      if (canBuy) {
+        card.addEventListener('click', () => purchaseUpgrade(upg));
+      }
+      
+      grid.appendChild(card);
+    });
+  }
+
+  function purchaseUpgrade(upgrade) {
+    if (gameState.purchasedUpgrades.includes(upgrade.id)) return;
+    if (upgrade.requires && !gameState.purchasedUpgrades.includes(upgrade.requires)) return;
+    if (gameState.evolutionPoints < upgrade.cost) return addLog('❌ Недостаточно очков!');
+
+    gameState.evolutionPoints -= upgrade.cost;
+    gameState.purchasedUpgrades.push(upgrade.id);
+
+    if (upgrade.effect.attack) gameState.modifiers.attack += upgrade.effect.attack;
+    if (upgrade.effect.defense) gameState.modifiers.defense += upgrade.effect.defense;
+    if (upgrade.effect.enemyDebuff) gameState.modifiers.enemyDebuff += upgrade.effect.enemyDebuff;
+
+    addLog(`🧬 Изучено: ${upgrade.name}!`);
+    renderEvolution();
+  }
+
+  // ============ КНОПКИ ============
+  document.getElementById('btnAttack').addEventListener('click', () => {
+    if (battleState || gameState.gameOver) return;
+    if (gameState.selectedPlanetId === null) return addLog('❌ Выберите свою планету (ПКМ)!');
+    const p = planets.find(pl => pl.id === gameState.selectedPlanetId);
+    if (!p || p.type !== 'ally') return addLog('❌ Только союзная планета!');
+    if (!p.garrison.some(u => u.hp > 0)) return addLog('❌ На планете нет юнитов!');
+
+    isAttackMode = !isAttackMode;
+    if (isAttackMode) {
+      document.getElementById('btnAttack').textContent = '⚔ КЛИКНИТЕ ПО ЦЕЛИ';
+      addLog('⚔ Режим атаки активен. Нажмите ПКМ по вражеской планете.');
+    } else {
+      document.getElementById('btnAttack').textContent = '⚔ Атаковать';
+    }
+  });
+
+  document.getElementById('btnNextTurn').addEventListener('click', nextTurn);
+
+  function nextTurn() {
+    if (battleState) return addLog('❌ Идет битва!');
+    if (isAttackMode) return addLog('❌ Сначала отмените режим атаки!');
+    if (gameState.gameOver) return;
+
+    gameState.turn++;
+    gameState.wave++;
+
+    const allies = planets.filter(p => p.type === 'ally');
+    gameState.credits += allies.length * 15;
+
+    // Спец-свойства
+    allies.forEach(p => {
+      if (p.special?.bonus === 'credits') gameState.credits += p.special.value;
+    });
+
+    // Враг
+    const enemyP = planets.find(p => p.type === 'enemy');
+    if (enemyP) {
+      // Усиление врага
+      if (gameState.wave % 2 === 0) {
+        const enemyTypes = ['zergling', 'zergling', 'hydralisk', 'roach'];
+        if (gameState.wave >= 8) enemyTypes.push('mutalisk');
+        if (gameState.wave >= 15) enemyTypes.push('ultralisk');
+        const newType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+        const ut = UNIT_TYPES[newType];
+        enemyP.garrison.push({ type: newType, hp: ut.hp, maxHp: ut.hp });
+      }
+
+      // ИИ атакует
+      if (gameState.wave % 4 === 0 && allies.length > 0 && enemyP.garrison.filter(u => u.hp > 0).length > 3) {
+        const weakest = allies.reduce((a, b) => getGarrisonPower(a) < getGarrisonPower(b) ? a : b);
+        const attackers = [];
+        const remaining = [];
+        enemyP.garrison.forEach(u => {
+          if (u.hp > 0 && attackers.length < 3) {
+            attackers.push({...u});
+            u.hp = 0;
+          } else if (u.hp > 0) {
+            remaining.push(u);
+          }
+        });
+        enemyP.garrison = remaining;
+
+        attackers.forEach(u => {
+          flyingUnits.push({
+            x: enemyP.x, y: enemyP.y,
+            tx: weakest.x, ty: weakest.y,
+            owner: 'enemy', sId: enemyP.id, tId: weakest.id,
+            progress: 0, unitType: u.type, hp: u.hp, maxHp: u.maxHp
+          });
+        });
+        addLog(`⚠ Рой X атакует ${weakest.name}!`);
+      }
+
+      if (gameState.wave === 12) {
+        const earth = planets.find(p => p.id === 3);
+        flyingUnits.push({
+          x: enemyP.x, y: enemyP.y,
+          tx: earth.x, ty: earth.y,
+          owner: 'enemy', sId: enemyP.id, tId: earth.id,
+          progress: 0, unitType: 'ultralisk', hp: 180, maxHp: 180,
+          isBoss: true
+        });
+        addLog('🚨 УЛЬТРАЛИСК-ВОЖАК НАПРАВЛЯЕТСЯ К ЗЕМЛЕ!');
+      }
+    }
+
+    checkStoryEvents();
+    checkGameOver();
+    addLog(`⏭ Ход ${gameState.turn}`);
+    saveGame();
+  }
+
+  // ============ СЮЖЕТ ============
+  function checkStoryEvents() {
+    const storyOverlay = document.getElementById('story-overlay');
+    const storyBox = document.getElementById('story-box');
+    const wave = gameState.wave;
+
+    const events = [
+      { wave: 5, id: 'signal',
+        title: '📡 Сигнал с Плутона',
+        text: 'Древние артефакты могут усилить вашу армию.',
+        choices: [
+          { text: '🔬 Исследовать (-2 юнита, +2🧬)', action: () => {
+            const earth = planets.find(p => p.id === 3);
+            const removed = 0;
+            const newGarrison = [];
+            earth.garrison.forEach(u => {
+              if (u.hp > 0 && removed < 2) { /* удаляем */ }
+              else if (u.hp > 0) newGarrison.push(u);
+            });
+            if (earth.garrison.filter(u => u.hp > 0).length >= 2) {
+              earth.garrison = newGarrison;
+              gameState.evolutionPoints += 2;
+              addLog('📡 Артефакты найдены! +2🧬');
+            } else {
+              addLog('📡 Недостаточно юнитов.');
+            }
+          }},
+          { text: 'Игнорировать', action: () => addLog('📡 Сигнал проигнорирован.') }
+        ]
+      },
+      { wave: 8, id: 'asteroid',
+        title: '☄ Пояс астероидов',
+        text: 'Уничтожьте астероиды или укрепите оборону.',
+        choices: [
+          { text: '💥 Уничтожить (-1 юнит, +50💰)', action: () => {
+            const earth = planets.find(p => p.id === 3);
+            const alive = earth.garrison.findIndex(u => u.hp > 0);
+            if (alive >= 0) { earth.garrison.splice(alive, 1); gameState.credits += 50; addLog('☄ Астероиды уничтожены! +50💰'); }
+            else addLog('☄ Нет юнитов для атаки.');
+          }},
+          { text: '🛡 Укрепить (-30💰)', action: () => {
+            if (gameState.credits >= 30) { gameState.credits -= 30; gameState.modifiers.defense += 3; addLog('🛡 Оборона усилена!'); }
+            else addLog('☄ Недостаточно кредитов.');
+          }}
+        ]
+      }
+    ];
+
+    const event = events.find(e => e.wave === wave && !gameState.storyEventsTriggered.includes(e.id));
+    if (!event) return;
+
+    gameState.storyEventsTriggered.push(event.id);
+    storyBox.innerHTML = `
+      <h3>${event.title}</h3>
+      <p>${event.text}</p>
+      <div class="story-choices">
+        ${event.choices.map((c, i) => `<button class="btn-story" id="story-choice-${i}">${c.text}</button>`).join('')}
+      </div>
+    `;
+    storyOverlay.style.display = 'flex';
+
+    event.choices.forEach((c, i) => {
+      document.getElementById(`story-choice-${i}`).addEventListener('click', () => {
+        c.action();
+        storyOverlay.style.display = 'none';
+        renderEvolution();
+      });
+    });
+  }
+
+  // ============ ПОШАГОВАЯ БИТВА ============
+  function startBattle(planet, attackingUnits, attackerOwner, isBoss = false) {
+    if (battleState || gameState.gameOver) return;
+
+    const defenderUnits = planet.garrison.filter(u => u.hp > 0).map(u => ({...u}));
+    const attackerUnits = attackingUnits.map(u => ({...u}));
+
+    if (attackerOwner === 'ally' && defenderUnits.length === 0 && planet.type === 'neutral') {
+      capturePlanet(planet, attackerUnits);
+      return;
+    }
+
+    document.getElementById('battle-overlay').style.display = 'flex';
+    document.getElementById('battle-title').textContent = isBoss ? '⚡ УЛЬТРАЛИСК-ВОЖАК ⚡' : `СРАЖЕНИЕ У ${planet.name}`;
+    document.getElementById('battle-round').textContent = '1';
+
+    battleState = {
+      planet,
+      isBoss,
+      allyUnits: attackerOwner === 'ally' ? attackerUnits : defenderUnits.filter(u => planet.type === 'ally' || planet.type === 'neutral'),
+      enemyUnits: attackerOwner === 'enemy' ? attackerUnits : defenderUnits.filter(u => planet.type === 'enemy' || planet.type === 'neutral'),
+      allySide: attackerOwner === 'ally' ? 'attacker' : 'defender',
+      isPlayerTurn: true,
+      round: 1,
+      selectedUnitIndex: null,
+      retreatPenalty: false
+    };
+
+    if (attackerOwner === 'enemy' && planet.type === 'ally') {
+      battleState.allyUnits = defenderUnits;
+      battleState.enemyUnits = attackerUnits;
+    } else if (attackerOwner === 'ally' && planet.type === 'enemy') {
+      battleState.allyUnits = attackerUnits;
+      battleState.enemyUnits = defenderUnits;
+    } else if (planet.type === 'neutral') {
+      battleState.allyUnits = attackerOwner === 'ally' ? attackerUnits : [];
+      battleState.enemyUnits = attackerOwner === 'enemy' ? attackerUnits : defenderUnits;
+    }
+
+    renderBattle();
+    document.getElementById('battle-turn-info').textContent = 'Ваш ход — выберите юнита';
+    document.getElementById('btnBattleAttack').disabled = true;
+    document.getElementById('btnBattleEndTurn').disabled = false;
+  }
+
+  function renderBattle() {
+    if (!battleState) return;
+
+    const allyGrid = document.getElementById('allyUnits');
+    const enemyGrid = document.getElementById('enemyUnits');
+    const battleLog = document.getElementById('battleLog');
+
+    allyGrid.innerHTML = '';
+    enemyGrid.innerHTML = '';
+
+    battleState.allyUnits.forEach((u, i) => {
+      if (u.hp <= 0) return;
+      const ut = UNIT_TYPES[u.type];
+      const card = document.createElement('div');
+      card.className = 'battle-unit-card';
+      if (battleState.selectedUnitIndex === i && battleState.isPlayerTurn) card.classList.add('selected');
+      card.innerHTML = `
+        <div class="unit-icon">${ut.icon}</div>
+        <div class="unit-name">${ut.name}</div>
+        <div class="unit-hp-bar"><div class="unit-hp-fill ${u.hp/u.maxHp < 0.3 ? 'low' : ''}" style="width:${(u.hp/u.maxHp)*100}%"></div></div>
+        <div class="unit-stats">⚔${ut.attack} 🛡${ut.defense}</div>
+        <div class="unit-stats">HP: ${u.hp}/${u.maxHp}</div>
+      `;
+      if (battleState.isPlayerTurn) {
+        card.addEventListener('click', () => selectBattleUnit(i));
+      }
+      allyGrid.appendChild(card);
+    });
+
+    battleState.enemyUnits.forEach((u, i) => {
+      if (u.hp <= 0) return;
+      const ut = UNIT_TYPES[u.type];
+      const card = document.createElement('div');
+      card.className = 'battle-unit-card';
+      card.innerHTML = `
+        <div class="unit-icon">${ut.icon}</div>
+        <div class="unit-name">${ut.name}</div>
+        <div class="unit-hp-bar"><div class="unit-hp-fill ${u.hp/u.maxHp < 0.3 ? 'low' : ''}" style="width:${(u.hp/u.maxHp)*100}%"></div></div>
+        <div class="unit-stats">⚔${ut.attack} 🛡${ut.defense}</div>
+        <div class="unit-stats">HP: ${u.hp}/${u.maxHp}</div>
+      `;
+      enemyGrid.appendChild(card);
+    });
+
+    document.getElementById('battle-round').textContent = battleState.round;
+  }
+
+  function selectBattleUnit(index) {
+    if (!battleState || !battleState.isPlayerTurn) return;
+    battleState.selectedUnitIndex = index;
+    document.getElementById('btnBattleAttack').disabled = false;
+    renderBattle();
+  }
+
+  function executePlayerAttack() {
+    if (!battleState || !battleState.isPlayerTurn || battleState.selectedUnitIndex === null) return;
+
+    const attacker = battleState.allyUnits[battleState.selectedUnitIndex];
+    if (!attacker || attacker.hp <= 0) return;
+
+    // Выбираем цель — случайного живого врага
+    const aliveEnemies = battleState.enemyUnits.filter(u => u.hp > 0);
+    if (aliveEnemies.length === 0) {
+      endBattle(true);
+      return;
+    }
+
+    const target = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+    const targetIndex = battleState.enemyUnits.indexOf(target);
+
+    // Расчет урона
+    const atkType = UNIT_TYPES[attacker.type];
+    const defType = UNIT_TYPES[target.type];
+    
+    let damage = atkType.attack + gameState.modifiers.attack;
+    
+    // Спец-свойства
+    if (atkType.special === 'ignore_defense') {
+      // Игнорирует защиту
+    } else if (atkType.special === 'splash') {
+      // Урон соседним юнитам
+      const splashDmg = Math.floor(damage * 0.3);
+      battleState.enemyUnits.forEach((u, i) => {
+        if (i !== targetIndex && u.hp > 0) {
+          u.hp -= splashDmg;
+        }
+      });
+    } else if (atkType.special === 'yamoto') {
+      damage *= 1.5;
+    }
+
+    damage = Math.max(1, damage - defType.defense - gameState.modifiers.defense);
+    
+    // Дебафф врага
+    if (gameState.modifiers.enemyDebuff > 0) {
+      damage = Math.floor(damage * (1 + gameState.modifiers.enemyDebuff));
+    }
+
+    // Типы атаки
+    if (atkType.attackType === 'explosive' && defType.class === 'heavy_vehicle') damage = Math.floor(damage * 1.3);
+    if (atkType.attackType === 'piercing' && defType.class === 'heavy_infantry') damage = Math.floor(damage * 1.5);
+
+    target.hp -= damage;
+    addBattleLog(`${atkType.name} атакует ${defType.name} на ${damage} урона!`);
+
+    if (target.hp <= 0) {
+      target.hp = 0;
+      addBattleLog(`${defType.name} уничтожен!`);
+    }
+
+    battleState.selectedUnitIndex = null;
+    document.getElementById('btnBattleAttack').disabled = true;
+    renderBattle();
+
+    // Проверка победы
+    if (battleState.enemyUnits.every(u => u.hp <= 0)) {
+      endBattle(true);
+    }
+  }
+
+  function executeEnemyTurn() {
+    if (!battleState) return;
+
+    const aliveEnemies = battleState.enemyUnits.filter(u => u.hp > 0);
+    const aliveAllies = battleState.allyUnits.filter(u => u.hp > 0);
+
+    if (aliveAllies.length === 0) {
+      endBattle(false);
+      return;
+    }
+
+    // Каждый живой враг атакует
+    aliveEnemies.forEach(enemy => {
+      if (aliveAllies.length === 0) return;
+      const target = aliveAllies[Math.floor(Math.random() * aliveAllies.length)];
+
+      const atkType = UNIT_TYPES[enemy.type];
+      const defType = UNIT_TYPES[target.type];
+
+      let damage = atkType.attack;
+      if (gameState.modifiers.enemyDebuff > 0) {
+        damage = Math.floor(damage * (1 - gameState.modifiers.enemyDebuff));
+      }
+      damage = Math.max(1, damage - defType.defense - gameState.modifiers.defense);
+
+      // Спец-свойства врагов
+      if (atkType.special === 'bounce') {
+        const bounceDmg = Math.floor(damage * 0.4);
+        const otherAllies = aliveAllies.filter(u => u !== target);
+        if (otherAllies.length > 0) {
+          const bounceTarget = otherAllies[0];
+          bounceTarget.hp -= bounceDmg;
+          addBattleLog(`Муталиск рикошетит в ${UNIT_TYPES[bounceTarget.type].name} на ${bounceDmg}!`);
+        }
+      }
+      if (atkType.special === 'cleave') {
+        aliveAllies.forEach(u => {
+          if (u !== target) u.hp -= Math.floor(damage * 0.3);
+        });
+      }
+
+      target.hp -= damage;
+      addBattleLog(`${atkType.name} атакует ${defType.name} на ${damage} урона!`);
+
+      if (target.hp <= 0) {
+        target.hp = 0;
+        const idx = aliveAllies.indexOf(target);
+        if (idx >= 0) aliveAllies.splice(idx, 1);
+        addBattleLog(`${defType.name} уничтожен!`);
+      }
+
+      // Убираем уничтоженных из allyUnits
+      battleState.allyUnits.forEach(u => { if (u.hp <= 0) u.hp = 0; });
+    });
+
+    battleState.round++;
+    battleState.isPlayerTurn = true;
+    document.getElementById('battle-turn-info').textContent = 'Ваш ход — выберите юнита';
+    renderBattle();
+
+    if (battleState.allyUnits.every(u => u.hp <= 0)) {
+      endBattle(false);
+    }
+  }
+
+  document.getElementById('btnBattleAttack').addEventListener('click', executePlayerAttack);
+
+  document.getElementById('btnBattleEndTurn').addEventListener('click', () => {
+    if (!battleState || !battleState.isPlayerTurn) return;
+    battleState.isPlayerTurn = false;
+    document.getElementById('battle-turn-info').textContent = 'Ход врага...';
+    document.getElementById('btnBattleEndTurn').disabled = true;
+    document.getElementById('btnBattleAttack').disabled = true;
+    battleState.selectedUnitIndex = null;
+    renderBattle();
+    setTimeout(executeEnemyTurn, 800);
+  });
+
+  document.getElementById('btnBattleRetreat').addEventListener('click', () => {
+    if (battleState) endBattle(false, true);
+  });
+
+  function endBattle(isAllyWin, isRetreat = false) {
+    if (!battleState) return;
+    document.getElementById('battle-overlay').style.display = 'none';
+
+    const p = battleState.planet;
+
+    if (isAllyWin) {
+      const survivors = battleState.allyUnits.filter(u => u.hp > 0);
+      if (p.type === 'enemy') {
+        if (survivors.length > 0) {
+          capturePlanet(p, survivors);
+        } else {
+          addLog(`⚔ ${p.name}: ничья — враг ослаблен.`);
+          p.garrison = [];
+        }
+      } else if (p.type === 'neutral') {
+        capturePlanet(p, survivors);
+      } else {
+        p.garrison = survivors;
+        addLog(`🛡 ${p.name} защищена!`);
+      }
+    } else {
+      if (p.type === 'ally') {
+        p.garrison = [];
+        p.type = 'neutral';
+        addLog(`💥 ${p.name} пала!`);
+      } else if (p.type === 'neutral' && battleState.allyUnits.length === 0) {
+        p.garrison = battleState.enemyUnits.filter(u => u.hp > 0);
+        p.type = 'enemy';
+        addLog(`💀 ${p.name} захвачена Роем!`);
+      }
+      checkGameOver();
+    }
+
+    battleState = null;
+    selectPlanet(p.id);
+  }
+
+  function capturePlanet(planet, survivors) {
+    planet.garrison = survivors;
+    planet.type = 'ally';
+    gameState.evolutionPoints += 1;
+
+    if (planet.special) {
+      if (planet.special.bonus === 'freeMarine') {
+        for (let i = 0; i < planet.special.value; i++) {
+          planet.garrison.push({ type: 'marine', hp: 40, maxHp: 40 });
+        }
+      }
+      if (planet.special.bonus === 'freeTank') {
+        planet.garrison.push({ type: 'siege_tank', hp: 100, maxHp: 100 });
+      }
+      if (planet.special.bonus === 'freeGhost') {
+        planet.garrison.push({ type: 'ghost', hp: 30, maxHp: 30 });
+      }
+      if (planet.special.bonus === 'evoOnCapture') gameState.evolutionPoints += planet.special.value;
+      if (planet.special.bonus === 'attack') gameState.modifiers.attack += planet.special.value;
+      if (planet.special.bonus === 'defense') gameState.modifiers.defense += planet.special.value;
+    }
+
+    addLog(`🏆 ${planet.name} захвачена! (+1🧬)`);
+  }
+
+  function addBattleLog(msg) {
+    const log = document.getElementById('battleLog');
+    const lines = log.innerHTML.split('<br>');
+    lines.push(msg);
+    if (lines.length > 5) lines.shift();
+    log.innerHTML = lines.join('<br>');
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function checkGameOver() {
+    const allies = planets.filter(p => p.type === 'ally');
+    const enemy = planets.find(p => p.type === 'enemy');
+    const earth = planets.find(p => p.id === 3);
+
+    if (!enemy || enemy.type === 'ally') {
+      endGame(true);
+      return;
+    }
+
+    if (earth.type !== 'ally' || (earth.garrison.every(u => u.hp <= 0))) {
+      endGame(false);
+      return;
+    }
+  }
+
+  function endGame(isVictory) {
+    gameState.gameOver = true;
+    const overlay = document.getElementById('game-over-overlay');
+    const title = document.getElementById('game-over-title');
+    const rating = document.getElementById('game-over-rating');
+    const stats = document.getElementById('game-over-stats');
+
+    const allies = planets.filter(p => p.type === 'ally').length;
+    const total = planets.filter(p => p.type !== 'star').length;
+    
+    if (isVictory) {
+      title.textContent = '🏆 ПОБЕДА!';
+      title.style.color = '#ffd700';
+      const score = allies / total;
+      if (score > 0.9) rating.textContent = 'S';
+      else if (score > 0.7) rating.textContent = 'A';
+      else if (score > 0.5) rating.textContent = 'B';
+      else rating.textContent = 'C';
+    } else {
+      title.textContent = '💀 ПОРАЖЕНИЕ';
+      title.style.color = '#ff5252';
+      rating.textContent = 'D';
+    }
+
+    stats.textContent = `Ходов: ${gameState.turn} | Планет захвачено: ${allies}/${total} | Волна: ${gameState.wave}`;
+    overlay.style.display = 'flex';
+  }
+
+  // ============ СОХРАНЕНИЯ ============
+  function saveGame() {
+    const saveData = {
+      gameState: JSON.parse(JSON.stringify(gameState)),
+      planetsData: planets.map(p => ({
+        id: p.id, type: p.type, ang: p.ang,
+        garrison: p.garrison.map(u => ({type: u.type, hp: u.hp, maxHp: u.maxHp}))
+      })),
+      flyingUnits: JSON.parse(JSON.stringify(flyingUnits))
+    };
+    localStorage.setItem('starcraftPdaV3', JSON.stringify(saveData));
+  }
+
+  function loadGame() {
+    const data = localStorage.getItem('starcraftPdaV3');
+    if (!data) return addLog('📂 Нет сохранения!');
+
+    try {
+      const saveData = JSON.parse(data);
+      gameState = saveData.gameState;
+      
+      saveData.planetsData.forEach(pd => {
+        const planet = planets.find(p => p.id === pd.id);
+        if (planet) {
+          planet.type = pd.type;
+          planet.ang = pd.ang;
+          planet.garrison = pd.garrison;
+        }
+      });
+
+      flyingUnits = saveData.flyingUnits;
+      battleState = null;
+      isAttackMode = false;
+      
+      document.getElementById('battle-overlay').style.display = 'none';
+      document.getElementById('story-overlay').style.display = 'none';
+      document.getElementById('game-over-overlay').style.display = 'none';
+      document.getElementById('btnAttack').textContent = '⚔ Атаковать';
+      
+      selectPlanet(gameState.selectedPlanetId);
+      renderEvolution();
+      updateRecruitGrid();
+      addLog('📂 Игра загружена!');
+    } catch (e) {
+      addLog('📂 Ошибка загрузки!');
+    }
+  }
+
+  document.getElementById('btnSave').addEventListener('click', () => {
+    saveGame();
+    addLog('💾 Игра сохранена!');
+  });
+
+  document.getElementById('btnLoad').addEventListener('click', loadGame);
+
+  // ============ ГОРЯЧИЕ КЛАВИШИ ============
+  window.addEventListener('keydown', (e) => {
+    if (battleState || gameState.gameOver) return;
+
+    switch(e.key.toLowerCase()) {
+      case 'a':
+        e.preventDefault();
+        document.getElementById('btnAttack').click();
+        break;
+      case ' ':
+        e.preventDefault();
+        nextTurn();
+        break;
+      case '1': case '2': case '3': case '4': case '5':
+      case '6': case '7': case '8': case '9':
+        e.preventDefault();
+        const id = parseInt(e.key);
+        const p = planets.find(p => p.id === id && p.type !== 'star');
+        if (p) selectPlanet(p.id);
+        break;
+    }
+  });
+
+  // ============ ГЛАВНЫЙ ЦИКЛ ============
+  function updateGameLoop() {
+    if (gameState.gameOver) {
+      drawGalaxy();
+      requestAnimationFrame(updateGameLoop);
+      return;
+    }
+
+    for (let i = flyingUnits.length - 1; i >= 0; i--) {
+      const f = flyingUnits[i];
+      f.progress += 0.025;
+      if (f.progress >= 1) {
+        const tP = planets.find(p => p.id === f.tId);
+        if (tP) {
+          startBattle(tP, [{type: f.unitType, hp: f.hp, maxHp: f.maxHp}], f.owner, f.isBoss || false);
+        }
+        flyingUnits.splice(i, 1);
+      } else {
+        f.x += (f.tx - f.x) * 0.06;
+        f.y += (f.ty - f.y) * 0.06;
+      }
+    }
+
+    drawGalaxy();
+    requestAnimationFrame(updateGameLoop);
+  }
+
+  function updateUIStats() {
+    document.getElementById('creditsValue').textContent = gameState.credits;
+    document.getElementById('evoPointsValue').textContent = gameState.evolutionPoints;
+    document.getElementById('waveCounter').textContent = gameState.wave;
+    document.getElementById('turnCounter').textContent = gameState.turn;
+
+    const allies = planets.filter(p => p.type === 'ally').length;
+    const total = planets.filter(p => p.type !== 'star').length;
+    document.getElementById('planetCountValue').textContent = `${allies}/${total}`;
+
+    const allyPower = planets.filter(p => p.type === 'ally').reduce((s, p) => s + getGarrisonPower(p), 0);
+    const enemyPower = planets.filter(p => p.type === 'enemy').reduce((s, p) => s + getGarrisonPower(p), 0);
+    const totalPower = allyPower + enemyPower || 1;
+    const strengthPercent = Math.round((allyPower / totalPower) * 100);
+    document.getElementById('strengthFill').style.width = strengthPercent + '%';
+    document.getElementById('strengthFill').textContent = `Сила: ${strengthPercent}%`;
+  }
+
+  function addLog(message) {
+    const logPanel = document.getElementById('logPanel');
+    const lines = logPanel.innerHTML.split('<br>');
+    lines.push(message);
+    if (lines.length > 6) lines.shift();
+    logPanel.innerHTML = lines.join('<br>');
+    logPanel.scrollTop = logPanel.scrollHeight;
+  }
+
+  // ============ ИНИЦИАЛИЗАЦИЯ ============
+  function init() {
+    createStars();
+    initGarrisons();
+    selectPlanet(3);
+    renderEvolution();
+    updateRecruitGrid();
+    addLog('🚀 Юниты Starcraft 2 готовы к бою!');
+    addLog('💡 [A] Атака [Пробел] Ход [1-9] Планеты');
+    updateGameLoop();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
