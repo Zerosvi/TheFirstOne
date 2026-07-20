@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=yes">
-  <title>Космический Фронт v30</title>
+  <title>Космический Фронт v34</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -23,203 +23,251 @@
       flex-direction: column; gap: 30px;
     }
     #mode-select-box {
-      background: #000; border: 8px solid #fff;
+      background: rgba(0,15,30,0.4); border: 2px solid rgba(0,200,255,0.3);
       padding: 40px 30px; text-align: center; color: #fff;
       max-width: 500px; width: 90%;
+      box-shadow: 0 0 40px rgba(0,150,255,0.15), inset 0 0 30px rgba(0,100,200,0.05);
+      backdrop-filter: blur(10px);
     }
-    #mode-select-box h2 { font-size: 16px; margin-bottom: 10px; color: #0ff; }
-    #mode-select-box p { font-size: 9px; color: #aaa; margin-bottom: 30px; line-height: 1.6; }
+    #mode-select-box h2 { font-size: 16px; margin-bottom: 10px; color: #0ff; text-shadow: 0 0 15px rgba(0,255,255,0.6); }
+    #mode-select-box p { font-size: 9px; color: #8cf; margin-bottom: 30px; line-height: 1.6; }
     .mode-btn {
-      padding: 20px 30px; border: 6px solid #fff;
-      background: #000; color: #fff;
+      padding: 20px 30px; border: 1px solid rgba(0,200,255,0.3);
+      background: rgba(0,40,80,0.3); color: #8cf;
       font-family: 'Press Start 2P', cursive; font-size: 14px;
       cursor: pointer; touch-action: manipulation; margin: 10px;
-      transition: all 0.1s;
+      transition: all 0.3s; backdrop-filter: blur(5px);
+      box-shadow: 0 0 20px rgba(0,150,255,0.1);
+      text-shadow: 0 0 8px rgba(150,200,255,0.5);
     }
-    .mode-btn:hover, .mode-btn:active { background: #fff; color: #000; }
-    .mode-btn.pc { border-color: #4af; color: #4af; }
-    .mode-btn.pc:hover, .mode-btn.pc:active { background: #4af; color: #000; }
-    .mode-btn.mobile { border-color: #f44; color: #faa; }
-    .mode-btn.mobile:hover, .mode-btn.mobile:active { background: #f44; color: #000; }
+    .mode-btn:hover, .mode-btn:active { background: rgba(0,150,255,0.2); border-color: rgba(0,255,255,0.6); box-shadow: 0 0 30px rgba(0,200,255,0.3); color: #fff; }
 
     .pda-container {
       width: 100vw; height: 100vh; height: 100dvh;
-      background: #000; border: 4px solid #fff;
+      background: #000810; border: 1px solid rgba(0,150,200,0.2);
       display: flex; flex-direction: column; overflow: hidden; position: relative;
+      box-shadow: 0 0 60px rgba(0,100,180,0.1), inset 0 0 80px rgba(0,50,100,0.04);
     }
     .header {
-      background: #000; border-bottom: 4px solid #fff;
+      background: rgba(0,15,30,0.4); border-bottom: 1px solid rgba(0,200,255,0.2);
       padding: 8px 16px; display: flex; justify-content: space-between; align-items: center;
-      color: #fff; font-size: 10px; z-index: 10; flex-shrink: 0; min-height: 38px;
+      color: #6cf; font-size: 10px; z-index: 10; flex-shrink: 0; min-height: 38px;
+      backdrop-filter: blur(8px);
+      text-shadow: 0 0 8px rgba(100,200,255,0.4);
     }
     .resources-bar {
-      background: #000; border-bottom: 2px solid #fff;
+      background: rgba(0,15,25,0.3); border-bottom: 1px solid rgba(0,150,200,0.15);
       padding: 6px 16px; display: flex; gap: 16px; flex-wrap: wrap;
       z-index: 10; flex-shrink: 0; font-size: 8px;
+      backdrop-filter: blur(8px);
     }
-    .resource { display: flex; align-items: center; gap: 6px; color: #fff; }
-    .resource-value { font-size: 12px; font-weight: bold; color: #0ff; }
+    .resource { display: flex; align-items: center; gap: 6px; color: #6af; }
+    .resource-value { font-size: 12px; font-weight: bold; color: #0ff; text-shadow: 0 0 10px rgba(0,255,255,0.6); }
     .main-content { display: flex; flex: 1; overflow: hidden; position: relative; flex-direction: row; }
-    .galaxy-map { flex: 1; background: #000; position: relative; overflow: hidden; min-width: 0; }
+    .galaxy-map { flex: 1; background: radial-gradient(ellipse at center, #001020 0%, #000408 70%); position: relative; overflow: hidden; min-width: 0; }
     #galaxy-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-    .star-bg { position: absolute; width: 2px; height: 2px; background: #fff; pointer-events: none; z-index: 1; }
+    .star-bg { position: absolute; width: 2px; height: 2px; background: #fff; pointer-events: none; z-index: 1; border-radius: 50%; box-shadow: 0 0 4px rgba(100,200,255,0.6); }
     .map-controls { position: absolute; bottom: 12px; right: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 20; }
     .map-btn {
-      width: 50px; height: 50px; border: 4px solid #fff;
-      background: #000; color: #fff;
+      width: 50px; height: 50px; border: 1px solid rgba(0,200,255,0.3);
+      background: rgba(0,30,60,0.3); color: #0cf;
       font-family: 'Press Start 2P', cursive; font-size: 20px;
       display: flex; justify-content: center; align-items: center;
-      cursor: pointer; touch-action: manipulation;
+      cursor: pointer; touch-action: manipulation; backdrop-filter: blur(5px);
+      box-shadow: 0 0 15px rgba(0,150,255,0.15);
+      text-shadow: 0 0 8px rgba(0,200,255,0.5);
     }
-    .map-btn:active { background: #fff; color: #000; }
+    .map-btn:active { background: rgba(0,150,255,0.3); border-color: rgba(0,255,255,0.6); box-shadow: 0 0 25px rgba(0,200,255,0.4); }
+
     .side-panel {
-      width: 240px; min-width: 200px; background: #000;
+      width: 240px; min-width: 200px;
+      background: rgba(0,15,25,0.3);
       display: flex; flex-direction: column; gap: 6px; padding: 8px;
       overflow-y: auto; flex-shrink: 0; z-index: 10; font-size: 7px;
-      border-left: 4px solid #fff;
+      border-left: 1px solid rgba(0,200,255,0.2);
+      backdrop-filter: blur(12px);
     }
-    .panel-section { background: #000; border: 4px solid #fff; padding: 8px; }
-    .section-title { color: #0ff; font-size: 9px; margin-bottom: 6px; border-bottom: 2px solid #fff; padding-bottom: 4px; text-align: center; }
+    .panel-section {
+      background: rgba(0,20,40,0.25); border: 1px solid rgba(0,200,255,0.2);
+      padding: 8px;
+      box-shadow: 0 0 20px rgba(0,100,200,0.08), inset 0 0 20px rgba(0,100,200,0.03);
+      backdrop-filter: blur(5px);
+    }
+    .section-title {
+      color: #0ff; font-size: 9px; margin-bottom: 6px;
+      border-bottom: 1px solid rgba(0,255,255,0.2); padding-bottom: 4px;
+      text-align: center; text-shadow: 0 0 10px rgba(0,255,255,0.5);
+      letter-spacing: 2px;
+    }
     .unit-recruit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     .unit-recruit-card {
-      background: #000; border: 4px solid #fff;
+      background: rgba(0,30,60,0.25); border: 1px solid rgba(0,200,255,0.2);
       padding: 10px 6px; cursor: pointer; text-align: center; font-size: 6px;
       touch-action: manipulation; min-height: 55px;
       display: flex; flex-direction: column; justify-content: center; align-items: center;
+      box-shadow: 0 0 10px rgba(0,150,255,0.08);
+      backdrop-filter: blur(3px); transition: all 0.2s;
     }
-    .unit-recruit-card:active { border-color: #0ff; background: #222; }
-    .recruit-name { color: #fff; margin: 3px 0; font-size: 7px; }
-    .recruit-cost { color: #0ff; font-size: 6px; }
+    .unit-recruit-card:active { border-color: rgba(0,255,255,0.5); background: rgba(0,150,255,0.2); box-shadow: 0 0 25px rgba(0,200,255,0.3); }
+    .recruit-name { color: #8cf; margin: 3px 0; font-size: 7px; text-shadow: 0 0 6px rgba(100,200,255,0.4); }
+    .recruit-cost { color: #0ff; font-size: 6px; text-shadow: 0 0 8px rgba(0,255,255,0.5); }
     .evolution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     .evo-card {
-      background: #000; border: 4px solid #fff;
+      background: rgba(0,30,60,0.25); border: 1px solid rgba(0,200,255,0.2);
       padding: 10px 8px; cursor: pointer; position: relative; font-size: 6px;
-      touch-action: manipulation; min-height: 44px;
+      touch-action: manipulation; min-height: 44px; backdrop-filter: blur(3px);
+      box-shadow: 0 0 10px rgba(0,150,255,0.08); transition: all 0.2s;
     }
-    .evo-card:active:not(.purchased):not(.locked) { border-color: #0ff; background: #222; }
-    .evo-card.purchased { opacity: 0.4; border-color: #4a4; pointer-events: none; }
-    .evo-card.locked { opacity: 0.3; cursor: not-allowed; }
-    .evo-card.purchased::after { content: '✓'; position: absolute; top: 4px; right: 6px; color: #0f0; font-size: 14px; }
-    .evo-name { color: #fff; font-size: 8px; margin-bottom: 3px; }
-    .evo-cost { color: #0ff; font-size: 7px; }
+    .evo-card:active:not(.purchased):not(.locked) { border-color: rgba(0,255,255,0.5); background: rgba(0,150,255,0.2); box-shadow: 0 0 25px rgba(0,200,255,0.3); }
+    .evo-card.purchased { opacity: 0.3; border-color: rgba(0,255,100,0.2); pointer-events: none; }
+    .evo-card.locked { opacity: 0.2; cursor: not-allowed; }
+    .evo-card.purchased::after { content: '✓'; position: absolute; top: 4px; right: 6px; color: #0f0; font-size: 14px; text-shadow: 0 0 8px rgba(0,255,0,0.6); }
+    .evo-name { color: #8cf; font-size: 8px; margin-bottom: 3px; text-shadow: 0 0 6px rgba(100,200,255,0.4); }
+    .evo-cost { color: #0ff; font-size: 7px; text-shadow: 0 0 8px rgba(0,255,255,0.5); }
     .action-buttons { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
     .btn {
       flex: 1; padding: 14px 10px; min-width: 60px;
-      border: 4px solid #fff; background: #000;
-      color: #fff; font-family: 'Press Start 2P', cursive; font-size: 10px;
-      cursor: pointer; touch-action: manipulation;
+      border: 1px solid rgba(0,200,255,0.25); background: rgba(0,30,60,0.25);
+      color: #8cf; font-family: 'Press Start 2P', cursive; font-size: 10px;
+      cursor: pointer; touch-action: manipulation; backdrop-filter: blur(5px);
+      box-shadow: 0 0 12px rgba(0,150,255,0.1);
+      text-shadow: 0 0 6px rgba(150,200,255,0.4); transition: all 0.2s;
     }
-    .btn:active:not(:disabled) { background: #fff; color: #000; }
-    .btn.attack { border-color: #f44; color: #faa; }
-    .btn.save { border-color: #4a4; color: #afa; }
-    .btn.transfer { border-color: #4af; color: #aaf; }
-    .log-panel { background: #000; border: 4px solid #fff; padding: 6px; color: #fff; font-size: 6px; height: 44px; overflow-y: auto; }
-    .planet-info-box { font-size: 8px; color: #fff; }
+    .btn:active:not(:disabled) { background: rgba(0,150,255,0.25); border-color: rgba(0,255,255,0.5); box-shadow: 0 0 25px rgba(0,200,255,0.35); }
+    .btn.attack { border-color: rgba(255,80,80,0.3); color: #f88; }
+    .btn.save { border-color: rgba(0,255,100,0.3); color: #8f8; }
+    .btn.transfer { border-color: rgba(0,180,255,0.3); color: #8af; }
+    .log-panel {
+      background: rgba(0,15,25,0.3); border: 1px solid rgba(0,200,255,0.15);
+      padding: 6px; color: #6af; font-size: 6px; height: 44px; overflow-y: auto;
+      text-shadow: 0 0 4px rgba(100,150,200,0.3); backdrop-filter: blur(5px);
+    }
+    .planet-info-box { font-size: 8px; color: #6af; }
     .garrison-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 4px; }
     .garrison-unit {
-      background: #000; border: 4px solid #fff;
-      padding: 6px; text-align: center; font-size: 7px; color: #fff;
-      cursor: pointer;
+      background: rgba(0,30,60,0.25); border: 1px solid rgba(0,200,255,0.2);
+      padding: 6px; text-align: center; font-size: 7px; color: #8cf;
+      cursor: pointer; backdrop-filter: blur(3px);
+      box-shadow: 0 0 8px rgba(0,150,255,0.08);
+      text-shadow: 0 0 5px rgba(150,200,255,0.3); transition: all 0.2s;
     }
-    .garrison-unit:active { border-color: #0ff; background: #222; }
-    .garrison-unit.selected-for-attack { border-color: #0ff !important; background: #222 !important; }
-    .garrison-unit.selected-for-transfer { border-color: #4af !important; background: #223 !important; }
-    .squad-info { color: #0ff; font-size: 7px; margin-top: 3px; text-align: center; min-height: 16px; }
+    .garrison-unit:active { border-color: rgba(0,255,255,0.4); background: rgba(0,150,255,0.15); }
+    .garrison-unit.selected-for-attack { border-color: rgba(0,255,255,0.6) !important; background: rgba(0,150,255,0.3) !important; box-shadow: 0 0 20px rgba(0,255,255,0.3); }
+    .garrison-unit.selected-for-transfer { border-color: rgba(100,200,255,0.6) !important; background: rgba(0,100,200,0.3) !important; box-shadow: 0 0 20px rgba(100,200,255,0.3); }
+    .squad-info { color: #0ff; font-size: 7px; margin-top: 3px; text-align: center; min-height: 16px; text-shadow: 0 0 8px rgba(0,255,255,0.4); }
 
     #battle-overlay {
       display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: #000; z-index: 50; justify-content: center; align-items: center;
+      background: rgba(0,10,20,0.9); z-index: 50; justify-content: center; align-items: center;
+      backdrop-filter: blur(15px);
     }
     #battle-box {
-      background: #000; border: 8px solid #fff;
+      background: rgba(0,20,40,0.4); border: 1px solid rgba(0,200,255,0.3);
       padding: 0; width: 90%; max-width: 750px; max-height: 90%;
       display: flex; flex-direction: column;
+      box-shadow: 0 0 50px rgba(0,150,255,0.15), inset 0 0 40px rgba(0,100,200,0.05);
+      backdrop-filter: blur(10px);
     }
     #battle-header {
-      background: #000; border-bottom: 4px solid #fff;
+      background: rgba(0,20,35,0.4); border-bottom: 1px solid rgba(0,200,255,0.2);
       padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
+      backdrop-filter: blur(5px);
     }
-    #battle-title { font-size: 14px; color: #0ff; }
+    #battle-title { font-size: 14px; color: #0ff; text-shadow: 0 0 12px rgba(0,255,255,0.5); }
     .battle-content { display: flex; flex-direction: column; flex: 1; }
     .battle-enemy-area {
       padding: 20px; display: flex; justify-content: center; align-items: center;
       gap: 20px; flex-wrap: wrap; min-height: 120px;
     }
     .enemy-sprite {
-      width: 64px; height: 64px; border: 4px solid #f44;
+      width: 64px; height: 64px; border: 1px solid rgba(255,80,80,0.3);
       display: flex; flex-direction: column; align-items: center;
-      background: #100; position: relative; cursor: pointer;
+      background: rgba(30,0,0,0.2); position: relative; cursor: pointer;
+      box-shadow: 0 0 15px rgba(255,0,0,0.1); backdrop-filter: blur(3px);
+      transition: all 0.2s;
     }
     .enemy-sprite canvas { width: 48px; height: 48px; image-rendering: pixelated; }
-    .enemy-sprite.selected { border-color: #0ff !important; animation: pulse 0.3s infinite; }
-    .enemy-info { font-size: 6px; color: #fff; margin-top: 2px; text-align: center; }
-    .enemy-hp-bar { width: 100%; height: 5px; background: #400; border: 2px solid #fff; margin-top: 2px; }
-    .enemy-hp-fill { height: 100%; background: #f00; transition: width 0.3s; }
+    .enemy-sprite.selected { border-color: rgba(0,255,255,0.6) !important; box-shadow: 0 0 25px rgba(0,255,255,0.4); animation: pulse 0.3s infinite; }
+    .enemy-info { font-size: 6px; color: #f88; margin-top: 2px; text-align: center; text-shadow: 0 0 5px rgba(255,100,100,0.5); }
+    .enemy-hp-bar { width: 100%; height: 5px; background: rgba(40,0,0,0.4); border: 1px solid rgba(255,0,0,0.2); margin-top: 2px; }
+    .enemy-hp-fill { height: 100%; background: #f00; transition: width 0.3s; box-shadow: 0 0 8px rgba(255,0,0,0.5); }
     .battle-ally-area {
       padding: 14px; display: flex; justify-content: center; align-items: center;
       gap: 12px; flex-wrap: wrap; min-height: 80px;
-      border-top: 4px solid #fff;
+      border-top: 1px solid rgba(0,200,255,0.2);
     }
     .ally-sprite {
-      width: 56px; height: 56px; border: 4px solid #4af;
+      width: 56px; height: 56px; border: 1px solid rgba(0,200,255,0.3);
       display: flex; flex-direction: column; align-items: center;
-      background: #001; cursor: pointer;
+      background: rgba(0,20,40,0.2); cursor: pointer; backdrop-filter: blur(3px);
+      box-shadow: 0 0 15px rgba(0,150,255,0.1); transition: all 0.2s;
     }
     .ally-sprite canvas { width: 40px; height: 40px; image-rendering: pixelated; }
     .ally-sprite.acted { opacity: 0.3; pointer-events: none; }
-    .ally-sprite.selected { border-color: #0ff !important; animation: pulse 0.3s infinite; }
-    .ally-info { font-size: 5px; color: #fff; margin-top: 2px; text-align: center; }
-    .ally-hp-bar { width: 100%; height: 4px; background: #001; border: 1px solid #fff; margin-top: 1px; }
-    .ally-hp-fill { height: 100%; background: #0f0; transition: width 0.3s; }
-    .ally-hp-fill.low { background: #f00; }
-    .ally-hp-fill.medium { background: #ff0; }
-    @keyframes pulse { 0%,100% { border-color: #0ff; } 50% { border-color: #fff; } }
+    .ally-sprite.selected { border-color: rgba(0,255,255,0.6) !important; box-shadow: 0 0 25px rgba(0,255,255,0.4); animation: pulse 0.3s infinite; }
+    .ally-info { font-size: 5px; color: #6af; margin-top: 2px; text-align: center; text-shadow: 0 0 4px rgba(100,200,255,0.4); }
+    .ally-hp-bar { width: 100%; height: 4px; background: rgba(0,15,25,0.4); border: 1px solid rgba(0,200,255,0.15); margin-top: 1px; }
+    .ally-hp-fill { height: 100%; background: #0f0; transition: width 0.3s; box-shadow: 0 0 6px rgba(0,255,0,0.4); }
+    .ally-hp-fill.low { background: #f00; box-shadow: 0 0 6px rgba(255,0,0,0.4); }
+    .ally-hp-fill.medium { background: #ff0; box-shadow: 0 0 6px rgba(255,255,0,0.4); }
+    @keyframes pulse { 0%,100% { border-color: rgba(0,255,255,0.6); } 50% { border-color: rgba(255,255,255,0.8); } }
     .battle-ui {
-      background: #000; border-top: 4px solid #fff;
+      background: rgba(0,20,35,0.4); border-top: 1px solid rgba(0,200,255,0.2);
       padding: 12px; display: flex; flex-direction: column; gap: 8px;
+      backdrop-filter: blur(5px);
     }
     .battle-text {
-      background: #000; border: 4px solid #fff;
-      padding: 10px; min-height: 40px; font-size: 10px; color: #fff; line-height: 1.5;
+      background: rgba(0,15,25,0.3); border: 1px solid rgba(0,200,255,0.15);
+      padding: 10px; min-height: 40px; font-size: 10px; color: #8cf; line-height: 1.5;
+      text-shadow: 0 0 6px rgba(150,200,255,0.3);
     }
     .battle-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
     .battle-menu-btn {
-      padding: 14px; border: 4px solid #fff;
-      background: #000; color: #fff;
+      padding: 14px; border: 1px solid rgba(0,200,255,0.25);
+      background: rgba(0,30,60,0.25); color: #8cf;
       font-family: 'Press Start 2P', cursive; font-size: 10px;
-      cursor: pointer; touch-action: manipulation;
+      cursor: pointer; touch-action: manipulation; backdrop-filter: blur(5px);
+      box-shadow: 0 0 12px rgba(0,150,255,0.1);
+      text-shadow: 0 0 6px rgba(150,200,255,0.4); transition: all 0.2s;
     }
-    .battle-menu-btn:active { background: #fff; color: #000; }
+    .battle-menu-btn:active { background: rgba(0,150,255,0.25); border-color: rgba(0,255,255,0.5); box-shadow: 0 0 25px rgba(0,200,255,0.35); }
     .d20-popup {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
       width: 64px; height: 64px; z-index: 30; pointer-events: none; display: none;
     }
     .d20-popup-inner {
-      width: 100%; height: 100%; background: #fff;
+      width: 100%; height: 100%;
+      background: rgba(0,200,255,0.6);
       display: flex; justify-content: center; align-items: center;
       font-family: 'Press Start 2P', cursive; font-size: 24px; color: #000;
-      border: 4px solid #000;
+      border: 1px solid rgba(0,255,255,0.5);
+      box-shadow: 0 0 30px rgba(0,200,255,0.4);
+      text-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
-    .d20-popup-inner.crit { background: #f44; color: #fff; animation: shake 0.1s infinite; }
+    .d20-popup-inner.crit { background: rgba(255,50,50,0.8); border-color: rgba(255,80,80,0.6); box-shadow: 0 0 40px rgba(255,0,0,0.6); animation: shake 0.1s infinite; }
     @keyframes shake { 0%,100% { transform: translate(0,0); } 50% { transform: translate(3px,-3px); } }
 
     .notification-overlay {
       display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.9); z-index: 80; justify-content: center; align-items: center;
+      background: rgba(0,5,10,0.85); z-index: 80; justify-content: center; align-items: center;
+      backdrop-filter: blur(15px);
     }
     .notification-box {
-      background: #000; border: 8px solid #fff;
-      padding: 24px; text-align: center; color: #fff; font-size: 10px;
+      background: rgba(0,20,40,0.5); border: 1px solid rgba(0,200,255,0.3);
+      padding: 24px; text-align: center; color: #8cf; font-size: 10px;
       max-width: 400px; width: 90%;
+      box-shadow: 0 0 50px rgba(0,150,255,0.2);
+      backdrop-filter: blur(10px);
     }
-    .notification-box h2 { font-size: 18px; margin-bottom: 12px; }
+    .notification-box h2 { font-size: 18px; margin-bottom: 12px; text-shadow: 0 0 12px currentColor; }
     .btn-close {
-      padding: 14px 28px; border: 4px solid #fff;
-      background: #000; color: #fff;
+      padding: 14px 28px; border: 1px solid rgba(0,200,255,0.25);
+      background: rgba(0,30,60,0.3); color: #8cf;
       font-family: 'Press Start 2P', cursive; font-size: 10px;
-      cursor: pointer; margin-top: 16px; touch-action: manipulation;
+      cursor: pointer; margin-top: 16px; touch-action: manipulation; backdrop-filter: blur(5px);
+      box-shadow: 0 0 12px rgba(0,150,255,0.1); transition: all 0.2s;
     }
-    .btn-close:active { background: #fff; color: #000; }
+    .btn-close:active { background: rgba(0,150,255,0.25); border-color: rgba(0,255,255,0.5); box-shadow: 0 0 25px rgba(0,200,255,0.35); }
 
     @media (orientation: portrait) {
       .pda-container.mobile-mode .main-content { flex-direction: column; }
@@ -227,7 +275,7 @@
       .pda-container.mobile-mode .side-panel {
         width: 100%; min-width: 100%; max-height: 50vh; flex: 1;
         flex-direction: column; gap: 4px; padding: 6px;
-        border-left: none; border-top: 4px solid #fff;
+        border-left: none; border-top: 1px solid rgba(0,200,255,0.2);
         overflow-y: auto; overflow-x: hidden;
         font-size: 7px;
       }
@@ -242,8 +290,6 @@
       .pda-container.mobile-mode .action-buttons { gap: 4px; }
       .pda-container.mobile-mode .btn { padding: 12px 6px; font-size: 8px; }
       .pda-container.mobile-mode .log-panel { height: 36px; }
-      .pda-container.mobile-mode .recruit-name { font-size: 6px; }
-      .pda-container.mobile-mode .recruit-cost { font-size: 5px; }
     }
   </style>
 </head>
@@ -260,7 +306,7 @@
 <div class="pda-container" id="pdaContainer" style="display:none;">
   <div class="header">
     <div style="font-size:9px;">ЦИКЛ <span id="turnCounter">1</span> | ВОЛНА <span id="waveCounter">0</span></div>
-    <button class="btn-close" id="btnFullscreen" style="padding:6px 12px;font-size:12px;border-color:#0ff;color:#0ff;">⛶</button>
+    <button class="btn-close" id="btnFullscreen" style="padding:6px 12px;font-size:12px;border-color:rgba(0,200,255,0.25);color:#0cf;">⛶</button>
   </div>
   <div class="resources-bar">
     <div class="resource"><span>◆</span><span class="resource-value" id="creditsValue">1000</span><span>КР</span></div>
@@ -273,10 +319,10 @@
       <div class="map-controls"><button class="map-btn" id="btnZoomIn">+</button><button class="map-btn" id="btnZoomOut">-</button><button class="map-btn" id="btnCenter">*</button></div>
     </div>
     <div class="side-panel">
-      <div class="panel-section"><div class="section-title">ПЛАНЕТА</div><div class="planet-info-box"><div>> <span id="selectedPlanet">ТАП</span></div><div>> <span id="selectedOwner">-</span></div></div><div style="color:#aaa;font-size:6px;margin-top:3px;">ГАРНИЗОН:</div><div class="garrison-grid" id="garrisonGrid"><div class="garrison-unit">-</div></div><div class="squad-info" id="squadInfo"></div></div>
+      <div class="panel-section"><div class="section-title">ПЛАНЕТА</div><div class="planet-info-box"><div>> <span id="selectedPlanet">ТАП</span></div><div>> <span id="selectedOwner">-</span></div></div><div style="color:#6af;font-size:6px;margin-top:3px;">ГАРНИЗОН:</div><div class="garrison-grid" id="garrisonGrid"><div class="garrison-unit">-</div></div><div class="squad-info" id="squadInfo"></div></div>
       <div class="panel-section"><div class="section-title">ВЕРБОВКА</div><div class="unit-recruit-grid" id="recruitGrid"></div></div>
       <div class="panel-section"><div class="section-title">ЭВОЛЮЦИЯ</div><div class="evolution-grid" id="evolutionGrid"></div></div>
-      <div class="panel-section"><div class="section-title">ДЕЙСТВИЯ</div><div class="action-buttons"><button class="btn attack" id="btnAttack">⚔ АТАКА</button><button class="btn transfer" id="btnTransfer">📦 ПЕРЕБРОС</button></div><div class="action-buttons"><button class="btn" id="btnNextTurn">⏭ ХОД</button></div><div class="action-buttons"><button class="btn save" id="btnSave">💾 СОХР</button><button class="btn save" id="btnLoad" style="border-color:#44f;color:#aaf;">📂 ЗАГР</button></div></div>
+      <div class="panel-section"><div class="section-title">ДЕЙСТВИЯ</div><div class="action-buttons"><button class="btn attack" id="btnAttack">⚔ АТАКА</button><button class="btn transfer" id="btnTransfer">📦 ПЕРЕБРОС</button></div><div class="action-buttons"><button class="btn" id="btnNextTurn">⏭ ХОД</button></div><div class="action-buttons"><button class="btn save" id="btnSave">💾 СОХР</button><button class="btn save" id="btnLoad" style="border-color:rgba(100,150,255,0.3);color:#8af;">📂 ЗАГР</button></div></div>
       <div class="panel-section"><div class="section-title">ЖУРНАЛ</div><div class="log-panel" id="logPanel">ГОТОВ</div></div>
     </div>
 
@@ -300,7 +346,7 @@
         <h2 id="notifTitle">УВЕДОМЛЕНИЕ</h2>
         <p id="notifText"></p>
         <button class="btn-close" id="btnCloseNotif">ЗАКРЫТЬ</button>
-        <button class="btn-close" id="btnNewGame" style="border-color:#4af;color:#aaf;margin-top:8px;">🔄 НОВАЯ ИГРА</button>
+        <button class="btn-close" id="btnNewGame" style="border-color:rgba(100,150,255,0.3);color:#8af;margin-top:8px;">🔄 НОВАЯ ИГРА</button>
       </div>
     </div>
   </div>
@@ -312,21 +358,8 @@
   const pdaContainer = document.getElementById('pdaContainer');
   const modeOverlay = document.getElementById('mode-select-overlay');
 
-  document.getElementById('btnModePC').addEventListener('click', () => {
-    controlMode = 'pc';
-    pdaContainer.classList.remove('mobile-mode');
-    modeOverlay.style.display = 'none';
-    pdaContainer.style.display = 'flex';
-    init();
-  });
-
-  document.getElementById('btnModeMobile').addEventListener('click', () => {
-    controlMode = 'mobile';
-    pdaContainer.classList.add('mobile-mode');
-    modeOverlay.style.display = 'none';
-    pdaContainer.style.display = 'flex';
-    init();
-  });
+  document.getElementById('btnModePC').addEventListener('click', () => { controlMode = 'pc'; pdaContainer.classList.remove('mobile-mode'); modeOverlay.style.display = 'none'; pdaContainer.style.display = 'flex'; init(); });
+  document.getElementById('btnModeMobile').addEventListener('click', () => { controlMode = 'mobile'; pdaContainer.classList.add('mobile-mode'); modeOverlay.style.display = 'none'; pdaContainer.style.display = 'flex'; init(); });
 
   const canvas = document.getElementById('galaxy-canvas');
   const ctx = canvas.getContext('2d');
@@ -337,32 +370,39 @@
 
   const btnFullscreen = document.getElementById('btnFullscreen');
   let isFullscreen = false;
-  btnFullscreen.addEventListener('click', () => {
-    if (!isFullscreen) {
-      if (pdaContainer.requestFullscreen) pdaContainer.requestFullscreen();
-      else if (pdaContainer.webkitRequestFullscreen) pdaContainer.webkitRequestFullscreen();
-    } else {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-  });
+  btnFullscreen.addEventListener('click', () => { if (!isFullscreen) { if (pdaContainer.requestFullscreen) pdaContainer.requestFullscreen(); else if (pdaContainer.webkitRequestFullscreen) pdaContainer.webkitRequestFullscreen(); } else { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } });
   document.addEventListener('fullscreenchange', () => { isFullscreen = !!document.fullscreenElement; updateFSBtn(); });
   document.addEventListener('webkitfullscreenchange', () => { isFullscreen = !!document.webkitFullscreenElement; updateFSBtn(); });
-  function updateFSBtn() { btnFullscreen.textContent = isFullscreen ? '✕' : '⛶'; btnFullscreen.style.color = isFullscreen ? '#f44' : '#0ff'; btnFullscreen.style.borderColor = isFullscreen ? '#f44' : '#0ff'; resizeCanvas(); }
+  function updateFSBtn() { btnFullscreen.textContent = isFullscreen ? '✕' : '⛶'; btnFullscreen.style.color = isFullscreen ? '#f44' : '#0cf'; resizeCanvas(); }
 
-  function drawMarine(c,x,y,s){c.fillStyle='#334455';c.fillRect(x-s/3,y-s/2,s*2/3,s);c.fillStyle='#fc8';c.fillRect(x-s/5,y-s/2-s/5,s*2/5,s/3);c.fillStyle='#48c';c.fillRect(x-s/4,y,s/2,s/5);c.fillStyle='#adf';c.fillRect(x-s/6,y-s/2-s/4,s/3,s/4);c.fillStyle='#fff';c.fillRect(x-s/8,y-s/2-s/3,s/4,s/5);}
-  function drawHeavy(c,x,y,s){c.fillStyle='#456';c.fillRect(x-s/3,y-s/2,s*2/3,s);c.fillStyle='#fc8';c.fillRect(x-s/4,y-s/2-s/5,s/2,s/3);c.fillStyle='#c44';c.fillRect(x-s/3,y-s/2,s*2/3,s/4);c.fillStyle='#fa4';c.fillRect(x-s/6,y-s/4,s/3,s/3);c.fillStyle='#333';c.fillRect(x-s/5,y-s/6,s*2/5,s/4);}
-  function drawSniper(c,x,y,s){c.fillStyle='#234';c.fillRect(x-s/3,y-s/2,s*2/3,s);c.fillStyle='#fc8';c.fillRect(x-s/5,y-s/2-s/5,s*2/5,s/3);c.fillStyle='#4a4';c.fillRect(x-s/4,y,s/2,s/5);c.fillStyle='#f44';c.fillRect(x-s/8,y-s/2-s/3,s/4,s/3);c.fillStyle='#000';c.fillRect(x-s/10,y-s/2-s/4,s/5,s/4);}
-  function drawEngineer(c,x,y,s){c.fillStyle='#454';c.fillRect(x-s/3,y-s/2,s*2/3,s);c.fillStyle='#fc8';c.fillRect(x-s/5,y-s/2-s/5,s*2/5,s/3);c.fillStyle='#fa0';c.fillRect(x-s/4,y,s/2,s/5);c.fillStyle='#4cf';c.fillRect(x-s/6,y-s/4,s/3,s/4);c.fillStyle='#fff';c.fillRect(x-s/8,y-s/3,s/4,s/5);}
-  function drawFighter(c,x,y,s){c.fillStyle='#369';c.fillRect(x-s/3,y-s/4,s*2/3,s/2);c.fillStyle='#fff';c.fillRect(x-s/4,y-s/3,s/2,s/3);c.fillStyle='#f60';c.fillRect(x-s/5,y+s/4,s*2/5,s/5);c.fillStyle='#0cf';c.fillRect(x-s/4,y,s/2,s/6);c.fillStyle='#0ff';c.fillRect(x-s/8,y-s/5,s/4,s/5);}
-  function drawBomber(c,x,y,s){c.fillStyle='#457';c.fillRect(x-s/3,y-s/4,s*2/3,s/2);c.fillStyle='#fc0';c.fillRect(x-s/4,y-s/3,s/2,s/3);c.fillStyle='#f00';c.fillRect(x-s/5,y+s/4,s*2/5,s/5);c.fillStyle='#000';c.fillRect(x-s/3,y-s/6,s*2/3,s/5);c.fillStyle='#f00';c.fillRect(x-s/6,y-s/4,s/3,s/6);}
-  function drawDestroyer(c,x,y,s){c.fillStyle='#567';c.fillRect(x-s/3,y-s/3,s*2/3,s*2/3);c.fillStyle='#0cf';c.fillRect(x-s/4,y-s/4,s/2,s/2);c.fillStyle='#fff';c.fillRect(x-s/6,y-s/5,s/3,s/3);c.fillStyle='#048';c.fillRect(x-s/3,y-s/4,s*2/3,s/6);c.fillStyle='#f40';c.fillRect(x-s/8,y-s/3,s/4,s/5);}
-  function drawInvader(c,x,y,s){c.fillStyle='#400';c.fillRect(x-s/2,y-s/2,s,s);c.fillStyle='#f00';c.fillRect(x-s/3,y-s/3,s*2/3,s*2/3);c.fillStyle='#800';c.fillRect(x-s/6,y-s/6,s/3,s/3);c.fillStyle='#0ff';c.fillRect(x-s/8,y-s/8,s/4,s/4);}
-  function drawRoach(c,x,y,s){c.fillStyle='#131';c.fillRect(x-s/2,y-s/3,s,s*2/3);c.fillStyle='#3a3';c.fillRect(x-s/3,y-s/2,s*2/3,s/3);c.fillStyle='#f00';c.fillRect(x-s/8,y-s/8,s/4,s/4);c.fillStyle='#0f0';c.fillRect(x-s/6,y-s/4,s/3,s/6);}
-  function drawLeviathan(c,x,y,s){c.fillStyle='#226';c.fillRect(x-s/2,y-s/3,s,s*2/3);c.fillStyle='#44c';c.fillRect(x-s/3,y-s/2,s*2/3,s/3);c.fillStyle='#fff';c.fillRect(x-s/6,y-s/6,s/3,s/3);c.fillStyle='#88f';c.fillRect(x-s/4,y-s/3,s/2,s/6);}
-  function drawLeviathanMaw(c,x,y,s){c.fillStyle='#622';c.fillRect(x-s/2,y-s/3,s,s*2/3);c.fillStyle='#c44';c.fillRect(x-s/3,y-s/2,s*2/3,s/3);c.fillStyle='#000';c.fillRect(x-s/5,y-s/4,s*2/5,s/2);c.fillStyle='#f88';c.fillRect(x-s/3,y-s/3,s*2/3,s/6);}
-  function drawBigLeviathan(c,x,y,s){c.fillStyle='#325';c.fillRect(x-s/2,y-s/3,s,s*2/3);c.fillStyle='#64a';c.fillRect(x-s/3,y-s/2,s*2/3,s/3);c.fillStyle='#f00';c.fillRect(x-s/5,y-s/5,s*2/5,s*2/5);c.fillStyle='#c8f';c.fillRect(x-s/3,y-s/4,s*2/3,s/6);}
-  function drawHive(c,x,y,s){c.fillStyle='#420';c.fillRect(x-s/2,y-s/3,s,s*2/3);c.fillStyle='#f60';c.fillRect(x-s/3,y-s/2,s*2/3,s/3);c.fillStyle='#0ff';c.fillRect(x-s/4,y-s/4,s/2,s/2);c.fillStyle='#f00';c.fillRect(x-s/3,y-s/3,s*2/3,s/6);}
+  // Голографические юниты (полупрозрачные, с голубой обводкой)
+  function holoRect(c,x,y,w,h,color,alpha=0.6) {
+    c.fillStyle = color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+    if (color.startsWith('#')) {
+      const r = parseInt(color.slice(1,3), 16);
+      const g = parseInt(color.slice(3,5), 16);
+      const b = parseInt(color.slice(5,7), 16);
+      c.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+    }
+    c.fillRect(x,y,w,h);
+    c.strokeStyle = 'rgba(0,200,255,0.5)';
+    c.lineWidth = 1;
+    c.strokeRect(x,y,w,h);
+  }
+
+  function drawMarine(c,x,y,s){holoRect(c,x-s/3,y-s/2,s*2/3,s,'#334455',0.5);holoRect(c,x-s/5,y-s/2-s/5,s*2/5,s/3,'#fc8',0.6);holoRect(c,x-s/4,y,s/2,s/5,'#48c',0.7);holoRect(c,x-s/6,y-s/2-s/4,s/3,s/4,'#adf',0.5);holoRect(c,x-s/8,y-s/2-s/3,s/4,s/5,'#fff',0.8);}
+  function drawHeavy(c,x,y,s){holoRect(c,x-s/3,y-s/2,s*2/3,s,'#456',0.5);holoRect(c,x-s/4,y-s/2-s/5,s/2,s/3,'#fc8',0.6);holoRect(c,x-s/3,y-s/2,s*2/3,s/4,'#c44',0.5);holoRect(c,x-s/6,y-s/4,s/3,s/3,'#fa4',0.6);holoRect(c,x-s/5,y-s/6,s*2/5,s/4,'#333',0.7);}
+  function drawSniper(c,x,y,s){holoRect(c,x-s/3,y-s/2,s*2/3,s,'#234',0.5);holoRect(c,x-s/5,y-s/2-s/5,s*2/5,s/3,'#fc8',0.6);holoRect(c,x-s/4,y,s/2,s/5,'#4a4',0.5);holoRect(c,x-s/8,y-s/2-s/3,s/4,s/3,'#f44',0.6);holoRect(c,x-s/10,y-s/2-s/4,s/5,s/4,'#000',0.7);}
+  function drawEngineer(c,x,y,s){holoRect(c,x-s/3,y-s/2,s*2/3,s,'#454',0.5);holoRect(c,x-s/5,y-s/2-s/5,s*2/5,s/3,'#fc8',0.6);holoRect(c,x-s/4,y,s/2,s/5,'#fa0',0.5);holoRect(c,x-s/6,y-s/4,s/3,s/4,'#4cf',0.6);holoRect(c,x-s/8,y-s/3,s/4,s/5,'#fff',0.8);}
+  function drawFighter(c,x,y,s){holoRect(c,x-s/3,y-s/4,s*2/3,s/2,'#369',0.5);holoRect(c,x-s/4,y-s/3,s/2,s/3,'#fff',0.6);holoRect(c,x-s/5,y+s/4,s*2/5,s/5,'#f60',0.5);holoRect(c,x-s/4,y,s/2,s/6,'#0cf',0.6);holoRect(c,x-s/8,y-s/5,s/4,s/5,'#0ff',0.8);}
+  function drawBomber(c,x,y,s){holoRect(c,x-s/3,y-s/4,s*2/3,s/2,'#457',0.5);holoRect(c,x-s/4,y-s/3,s/2,s/3,'#fc0',0.6);holoRect(c,x-s/5,y+s/4,s*2/5,s/5,'#f00',0.5);holoRect(c,x-s/3,y-s/6,s*2/3,s/5,'#000',0.7);holoRect(c,x-s/6,y-s/4,s/3,s/6,'#f00',0.5);}
+  function drawDestroyer(c,x,y,s){holoRect(c,x-s/3,y-s/3,s*2/3,s*2/3,'#567',0.5);holoRect(c,x-s/4,y-s/4,s/2,s/2,'#0cf',0.6);holoRect(c,x-s/6,y-s/5,s/3,s/3,'#fff',0.7);holoRect(c,x-s/3,y-s/4,s*2/3,s/6,'#048',0.5);holoRect(c,x-s/8,y-s/3,s/4,s/5,'#f40',0.6);}
+  function drawInvader(c,x,y,s){holoRect(c,x-s/2,y-s/2,s,s,'#400',0.5);holoRect(c,x-s/3,y-s/3,s*2/3,s*2/3,'#f00',0.6);holoRect(c,x-s/6,y-s/6,s/3,s/3,'#800',0.5);holoRect(c,x-s/8,y-s/8,s/4,s/4,'#0ff',0.8);}
+  function drawRoach(c,x,y,s){holoRect(c,x-s/2,y-s/3,s,s*2/3,'#131',0.5);holoRect(c,x-s/3,y-s/2,s*2/3,s/3,'#3a3',0.6);holoRect(c,x-s/8,y-s/8,s/4,s/4,'#f00',0.6);holoRect(c,x-s/6,y-s/4,s/3,s/6,'#0f0',0.7);}
+  function drawLeviathan(c,x,y,s){holoRect(c,x-s/2,y-s/3,s,s*2/3,'#226',0.5);holoRect(c,x-s/3,y-s/2,s*2/3,s/3,'#44c',0.6);holoRect(c,x-s/6,y-s/6,s/3,s/3,'#fff',0.7);holoRect(c,x-s/4,y-s/3,s/2,s/6,'#88f',0.5);}
+  function drawLeviathanMaw(c,x,y,s){holoRect(c,x-s/2,y-s/3,s,s*2/3,'#622',0.5);holoRect(c,x-s/3,y-s/2,s*2/3,s/3,'#c44',0.6);holoRect(c,x-s/5,y-s/4,s*2/5,s/2,'#000',0.7);holoRect(c,x-s/3,y-s/3,s*2/3,s/6,'#f88',0.5);}
+  function drawBigLeviathan(c,x,y,s){holoRect(c,x-s/2,y-s/3,s,s*2/3,'#325',0.5);holoRect(c,x-s/3,y-s/2,s*2/3,s/3,'#64a',0.6);holoRect(c,x-s/5,y-s/5,s*2/5,s*2/5,'#f00',0.6);holoRect(c,x-s/3,y-s/4,s*2/3,s/6,'#c8f',0.5);}
+  function drawHive(c,x,y,s){holoRect(c,x-s/2,y-s/3,s,s*2/3,'#420',0.5);holoRect(c,x-s/3,y-s/2,s*2/3,s/3,'#f60',0.6);holoRect(c,x-s/4,y-s/4,s/2,s/2,'#0ff',0.7);holoRect(c,x-s/3,y-s/3,s*2/3,s/6,'#f00',0.5);}
 
   const UNIT_TYPES = {
     marine:{name:'ПЕХОТИНЕЦ',draw:drawMarine,hp:40,maxHp:40,ac:13,atk:3,dmg:'1d8+3',cost:20,color:'#48c'},
@@ -384,7 +424,7 @@
   function parseDamage(dmg){const m=dmg.match(/(\d+)d(\d+)([+-]\d+)?/);if(!m)return 0;const n=parseInt(m[1]),s=parseInt(m[2]),b=m[3]?parseInt(m[3]):0;let t=b;for(let i=0;i<n;i++)t+=Math.floor(Math.random()*s)+1;return t;}
 
   const planets = [
-    {id:0,name:'СОЛНЦЕ',dist:0,ang:0,speed:0,size:16,type:'sun',garrison:[],isCore:true,color:'#ff0'},
+    {id:0,name:'СОЛНЦЕ',dist:0,ang:0,speed:0,size:18,type:'sun',garrison:[],isCore:true,color:'#ff0'},
     {id:1,name:'МЕРКУРИЙ',dist:55,ang:0.5,speed:0.04,size:4,type:'neutral',garrison:[],color:'#888'},
     {id:2,name:'ВЕНЕРА',dist:90,ang:2.0,speed:0.025,size:5,type:'neutral',garrison:[],color:'#fa0'},
     {id:3,name:'ЗЕМЛЯ',dist:125,ang:3.5,speed:0.02,size:7,type:'ally',garrison:[],color:'#4af'},
@@ -402,137 +442,184 @@
   let gameState={credits:1000,turn:1,wave:0,evolutionPoints:3,coreEnergy:0,maxCoreEnergy:10,selectedPlanetId:3,modifiers:{ac:0,atk:0,enemyDebuff:0,corePerTurn:1},purchasedUpgrades:[],gameOver:false,attackSquad:[],transferSquad:[],mode:'none'};
   let flyingGroups=[],battleState=null;
 
-  function createStars(){const c=document.getElementById('galaxyMap');c.querySelectorAll('.star-bg').forEach(s=>s.remove());for(let i=0;i<50;i++){const s=document.createElement('div');s.className='star-bg';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.opacity=Math.random()*0.5+0.2;s.style.width='2px';s.style.height='2px';c.appendChild(s);}}
+  function createStars(){const c=document.getElementById('galaxyMap');c.querySelectorAll('.star-bg').forEach(s=>s.remove());for(let i=0;i<60;i++){const s=document.createElement('div');s.className='star-bg';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.opacity=Math.random()*0.4+0.2;s.style.width=Math.random()*2+1+'px';s.style.height=s.style.width;s.style.boxShadow='0 0 3px rgba(100,200,255,0.4)';c.appendChild(s);}}
 
   let cam={x:0,y:0},zoom=1.3;const MIN_ZOOM=0.3,MAX_ZOOM=4.0;
   let isDragging=false,dragStart={x:0,y:0},dragStartCam={x:0,y:0};
 
-  // ===== ИСПРАВЛЕННОЕ СЕНСОРНОЕ ПЕРЕДВИЖЕНИЕ =====
-  canvas.addEventListener('pointerdown',(e)=>{
-    if(battleState||gameState.gameOver)return;
-    isDragging=true;
-    dragStart.x=e.clientX;
-    dragStart.y=e.clientY;
-    dragStartCam.x=cam.x;
-    dragStartCam.y=cam.y;
-    canvas.setPointerCapture(e.pointerId);
-  });
-
-  canvas.addEventListener('pointermove',(e)=>{
-    if(!isDragging)return;
-    const dx=e.clientX-dragStart.x;
-    const dy=e.clientY-dragStart.y;
-    cam.x=dragStartCam.x-dx/zoom;
-    cam.y=dragStartCam.y-dy/zoom;
-  });
-
-  canvas.addEventListener('pointerup',(e)=>{
-    if(!isDragging)return;
-    isDragging=false;
-    canvas.releasePointerCapture(e.pointerId);
-    if(battleState||gameState.gameOver)return;
-    const dx=e.clientX-dragStart.x;
-    const dy=e.clientY-dragStart.y;
-    // Тап (почти без движения)
-    if(Math.hypot(dx,dy)<(controlMode==='mobile'?12:8)){
-      const rect=canvas.getBoundingClientRect();
-      const mx=e.clientX-rect.left,my=e.clientY-rect.top;
-      const wX=(mx-W/2)/zoom+cx+cam.x,wY=(my-H/2)/zoom+cy+cam.y;
-      let cp=null;
-      for(let p of planets){const px=cx+p.dist*Math.cos(p.ang),py=cy+p.dist*Math.sin(p.ang);if(Math.hypot(wX-px,wY-py)<p.size+(controlMode==='mobile'?16:12)){cp=p;break;}}
-      if(cp){
-        if(cp.isCore){harvestCoreEnergy();}
-        else if(gameState.mode==='attack'&&cp.id!==gameState.selectedPlanetId&&cp.type!=='ally'){executeAttack(cp);}
-        else if(gameState.mode==='transfer'&&cp.id!==gameState.selectedPlanetId&&cp.type==='ally'){executeTransfer(cp);}
-        else if(gameState.mode==='none'){selectPlanet(cp.id);}
-      }
-    }
-  });
-
+  canvas.addEventListener('pointerdown',(e)=>{if(battleState||gameState.gameOver)return;isDragging=true;dragStart.x=e.clientX;dragStart.y=e.clientY;dragStartCam.x=cam.x;dragStartCam.y=cam.y;canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener('pointermove',(e)=>{if(!isDragging)return;cam.x=dragStartCam.x-(e.clientX-dragStart.x)/zoom;cam.y=dragStartCam.y-(e.clientY-dragStart.y)/zoom;});
+  canvas.addEventListener('pointerup',(e)=>{if(!isDragging)return;isDragging=false;canvas.releasePointerCapture(e.pointerId);if(battleState||gameState.gameOver)return;const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y;if(Math.hypot(dx,dy)<(controlMode==='mobile'?12:8)){const rect=canvas.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;const wX=(mx-W/2)/zoom+cx+cam.x,wY=(my-H/2)/zoom+cy+cam.y;let cp=null;for(let p of planets){const px=cx+p.dist*Math.cos(p.ang),py=cy+p.dist*Math.sin(p.ang);if(Math.hypot(wX-px,wY-py)<p.size+(controlMode==='mobile'?16:12)){cp=p;break;}}if(cp){if(cp.isCore){harvestCoreEnergy();}else if(gameState.mode==='attack'&&cp.id!==gameState.selectedPlanetId&&cp.type!=='ally'){executeAttack(cp);}else if(gameState.mode==='transfer'&&cp.id!==gameState.selectedPlanetId&&cp.type==='ally'){executeTransfer(cp);}else if(gameState.mode==='none'){selectPlanet(cp.id);}}}});
   canvas.addEventListener('pointerleave',()=>{isDragging=false;});
 
-  let ipd=0;
-  canvas.addEventListener('touchstart',(e)=>{if(e.touches.length===2){e.preventDefault();ipd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}});
+  let ipd=0;canvas.addEventListener('touchstart',(e)=>{if(e.touches.length===2){e.preventDefault();ipd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}});
   canvas.addEventListener('touchmove',(e)=>{if(e.touches.length===2&&ipd>0){e.preventDefault();const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);zoom=Math.min(MAX_ZOOM,Math.max(MIN_ZOOM,zoom*(d/ipd)));ipd=d;}});
   document.getElementById('btnZoomIn').addEventListener('click',()=>zoom=Math.min(MAX_ZOOM,zoom+0.3));
   document.getElementById('btnZoomOut').addEventListener('click',()=>zoom=Math.max(MIN_ZOOM,zoom-0.3));
   document.getElementById('btnCenter').addEventListener('click',()=>{const e=planets.find(p=>p.id===3);cam.x=-e.dist*Math.cos(e.ang);cam.y=-e.dist*Math.sin(e.ang);zoom=1.3;});
 
-  window.addEventListener('keydown',(e)=>{
-    if(battleState||gameState.gameOver||controlMode!=='pc')return;
-    switch(e.key.toLowerCase()){
-      case 'a': document.getElementById('btnAttack').click(); break;
-      case 't': document.getElementById('btnTransfer').click(); break;
-      case ' ': e.preventDefault(); document.getElementById('btnNextTurn').click(); break;
-      case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':case '0':
-        const id = e.key==='0'?10:parseInt(e.key);
-        const p = planets.find(p=>p.id===id&&p.type!=='sun');
-        if(p) selectPlanet(p.id);
-        break;
-    }
-  });
+  window.addEventListener('keydown',(e)=>{if(battleState||gameState.gameOver||controlMode!=='pc')return;switch(e.key.toLowerCase()){case 'a':document.getElementById('btnAttack').click();break;case 't':document.getElementById('btnTransfer').click();break;case ' ':e.preventDefault();document.getElementById('btnNextTurn').click();break;case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':case '0':const id=e.key==='0'?10:parseInt(e.key);const p=planets.find(p=>p.id===id&&p.type!=='sun');if(p)selectPlanet(p.id);break;}});
 
   function harvestCoreEnergy(){if(gameState.coreEnergy<=0){addLog('☀ НЕТ ЭНЕРГИИ!');return;}const c=gameState.coreEnergy;gameState.coreEnergy=0;const b=gameState.modifiers.corePerTurn>2?Math.floor(c*1.5):c;gameState.credits+=b*5;gameState.evolutionPoints+=Math.floor(c/3);addLog(`☀ +${b*5}КР +${Math.floor(c/3)}ЭВО!`);}
   function passiveCoreGeneration(){gameState.coreEnergy=Math.min(gameState.maxCoreEnergy,gameState.coreEnergy+1+gameState.modifiers.corePerTurn);}
   function getGarrisonCount(p){return p.garrison.filter(u=>u.hp>0).length;}
 
+  function drawPixelSun(ctx, x, y, size) {
+    const r = size * zoom;
+    const g = ctx.createRadialGradient(x, y, r * 0.1, x, y, r * 1.6);
+    g.addColorStop(0, 'rgba(255,255,200,0.7)');
+    g.addColorStop(0.3, 'rgba(255,200,50,0.4)');
+    g.addColorStop(0.7, 'rgba(255,100,0,0.1)');
+    g.addColorStop(1, 'rgba(255,50,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 1.6, 0, Math.PI * 2);
+    ctx.fill();
+
+    const pixelSize = Math.max(2, Math.floor(r / 6));
+    for (let py = y - r; py < y + r; py += pixelSize) {
+      for (let px = x - r; px < x + r; px += pixelSize) {
+        const dist = Math.hypot(px - x, py - y);
+        if (dist < r) {
+          const intensity = 1 - (dist / r) * 0.6;
+          if (intensity > 0.8) {
+            ctx.fillStyle = `rgba(255, 255, ${Math.floor(100 + 155 * intensity)}, ${intensity * 0.8})`;
+          } else if (intensity > 0.5) {
+            ctx.fillStyle = `rgba(255, ${Math.floor(200 * intensity)}, 0, ${intensity * 0.7})`;
+          } else {
+            ctx.fillStyle = `rgba(${Math.floor(200 * intensity)}, ${Math.floor(100 * intensity)}, 0, ${intensity * 0.5})`;
+          }
+          ctx.fillRect(px, py, pixelSize, pixelSize);
+        }
+      }
+    }
+
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,200,0.5)';
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2 + Date.now() / 3000;
+      const rayLen = r * (1.3 + Math.sin(Date.now() / 500 + i) * 0.2);
+      const rx = x + Math.cos(angle) * rayLen;
+      const ry = y + Math.sin(angle) * rayLen;
+      ctx.fillRect(rx - pixelSize/2, ry - pixelSize/2, pixelSize, pixelSize);
+      for (let j = 1; j <= 3; j++) {
+        const px2 = x + Math.cos(angle) * (rayLen - j * pixelSize * 2);
+        const py2 = y + Math.sin(angle) * (rayLen - j * pixelSize * 2);
+        ctx.fillRect(px2 - pixelSize/2, py2 - pixelSize/2, pixelSize, pixelSize);
+      }
+    }
+  }
+
   function drawGalaxy(){
     ctx.clearRect(0,0,W,H);const ox=cam.x*zoom,oy=cam.y*zoom;const ccx=cx-ox,ccy=cy-oy;ctx.imageSmoothingEnabled=false;
 
-    // ===== ОРБИТЫ С ПОДСВЕТКОЙ =====
-    planets.forEach(p=>{
-      if(p.isCore)return;
-      const r=p.dist*zoom;
-      ctx.beginPath();ctx.arc(ccx,ccy,r,0,Math.PI*2);
-      // Цвет орбиты зависит от типа планеты
-      let orbitColor;
-      if(p.type==='ally') orbitColor='rgba(0,200,255,0.3)';
-      else if(p.type==='enemy') orbitColor='rgba(255,60,60,0.3)';
-      else orbitColor='rgba(150,150,150,0.15)';
-      ctx.strokeStyle=orbitColor;
-      ctx.setLineDash([5,8]);
-      ctx.lineWidth=2;
-      ctx.stroke();
-      ctx.setLineDash([]);
+    // Голографическая сетка (более заметная)
+    ctx.strokeStyle='rgba(0,150,255,0.04)';ctx.lineWidth=0.5;
+    const gridSize=80*zoom;
+    for(let x=ccx%gridSize;x<W;x+=gridSize){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=ccy%gridSize;y<H;y+=gridSize){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
 
-      // Подсветка орбиты выбранной планеты
-      if(p.id===gameState.selectedPlanetId){
-        ctx.beginPath();ctx.arc(ccx,ccy,r,0,Math.PI*2);
-        ctx.strokeStyle='rgba(0,255,255,0.6)';
-        ctx.setLineDash([3,5]);
-        ctx.lineWidth=3;
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
+    const sunX = ccx;
+    const sunY = ccy;
+
+    // Орбиты с голографическим эффектом
+    planets.forEach(p=>{if(p.isCore)return;const r=p.dist*zoom;ctx.beginPath();ctx.arc(ccx,ccy,r,0,Math.PI*2);let oc;if(p.type==='ally')oc='rgba(0,200,255,0.2)';else if(p.type==='enemy')oc='rgba(255,60,60,0.2)';else oc='rgba(150,150,150,0.08)';ctx.strokeStyle=oc;ctx.setLineDash([6,10]);ctx.lineWidth=1.5;ctx.shadowBlur=8;ctx.shadowColor=oc;ctx.stroke();ctx.shadowBlur=0;ctx.setLineDash([]);
+      if(p.id===gameState.selectedPlanetId){ctx.beginPath();ctx.arc(ccx,ccy,r,0,Math.PI*2);ctx.strokeStyle='rgba(0,255,255,0.4)';ctx.setLineDash([4,6]);ctx.lineWidth=2;ctx.shadowBlur=12;ctx.shadowColor='rgba(0,255,255,0.3)';ctx.stroke();ctx.shadowBlur=0;ctx.setLineDash([]);}
     });
 
-    // ===== ПЛАНЕТЫ =====
+    // Солнце
+    const sunPlanet = planets.find(p => p.isCore);
+    if (sunPlanet) {
+      drawPixelSun(ctx, sunX, sunY, sunPlanet.size);
+      ctx.fillStyle='#fff';ctx.font=`${Math.max(6,9*zoom)}px 'Press Start 2P'`;ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.shadowBlur=10;ctx.shadowColor='rgba(255,255,200,0.5)';ctx.fillText('СОЛНЦЕ',sunX,sunY-sunPlanet.size*zoom-3);ctx.shadowBlur=0;
+      ctx.fillStyle='#0ff';ctx.shadowBlur=8;ctx.shadowColor='rgba(0,255,255,0.5)';ctx.fillText(`☀${gameState.coreEnergy}/${gameState.maxCoreEnergy}`,sunX,sunY+sunPlanet.size*zoom+12);ctx.shadowBlur=0;
+    }
+
+    // Планеты с тенями (сохранены)
     planets.forEach(p=>{
-      p.ang+=p.speed*0.05;const x=ccx+p.dist*zoom*Math.cos(p.ang),y=ccy+p.dist*zoom*Math.sin(p.ang);p.x=cx+p.dist*Math.cos(p.ang);p.y=cy+p.dist*Math.sin(p.ang);
-      if(p.isCore){const r=p.size*zoom;ctx.fillStyle='#ff0';ctx.fillRect(ccx-r/2,ccy-r/2,r,r);ctx.fillStyle='#fff';ctx.fillRect(ccx-r/4,ccy-r/4,r/2,r/2);ctx.fillStyle='#fff';ctx.font=`${Math.max(6,9*zoom)}px 'Press Start 2P'`;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('СОЛНЦЕ',ccx,ccy-r/2-2);ctx.fillStyle='#0ff';ctx.fillText(`☀${gameState.coreEnergy}/${gameState.maxCoreEnergy}`,ccx,ccy+r/2+6);return;}
-      const r=p.size*zoom;
-      // Свечение планеты
-      ctx.fillStyle='#000';ctx.fillRect(x-r/2-2,y-r/2-2,r+4,r+4);
-      ctx.fillStyle=p.color||'#888';ctx.fillRect(x-r/2,y-r/2,r,r);
-      // Тень и блик
-      ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(x-r/2,y,r,r/2);
-      ctx.fillStyle='rgba(255,255,255,0.2)';ctx.fillRect(x-r/2,y-r/2,r/2,r/2);
-      // Подсветка выбранной планеты
+      if(p.isCore) return;
+      p.ang+=p.speed*0.05;
+      const px = ccx + p.dist * zoom * Math.cos(p.ang);
+      const py = ccy + p.dist * zoom * Math.sin(p.ang);
+      p.x=cx+p.dist*Math.cos(p.ang);
+      p.y=cy+p.dist*Math.sin(p.ang);
+      const r = p.size * zoom;
+      const dx = px - sunX;
+      const dy = py - sunY;
+      const distToSun = Math.hypot(dx, dy);
+      const dirX = dx / distToSun;
+      const dirY = dy / distToSun;
+      const shadowOffsetX = dirX * r * 0.3;
+      const shadowOffsetY = dirY * r * 0.3;
+
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(px - r/2 + shadowOffsetX, py - r/2 + shadowOffsetY, r, r);
+      ctx.fillStyle = p.color || '#888';
+      ctx.fillRect(px - r/2, py - r/2, r, r);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(px - r/2, py - r/2, r, r);
+      ctx.clip();
+      const lightGrad = ctx.createLinearGradient(px - dirX * r, py - dirY * r, px + dirX * r, py + dirY * r);
+      lightGrad.addColorStop(0, 'rgba(255,255,255,0.25)');
+      lightGrad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+      lightGrad.addColorStop(1, 'rgba(0,0,0,0.0)');
+      ctx.fillStyle = lightGrad;
+      ctx.fillRect(px - r/2, py - r/2, r, r);
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(px - r/2, py - r/2, r, r);
+      ctx.clip();
+      const darkGrad = ctx.createLinearGradient(px - dirX * r, py - dirY * r, px + dirX * r, py + dirY * r);
+      darkGrad.addColorStop(0, 'rgba(0,0,0,0.0)');
+      darkGrad.addColorStop(0.5, 'rgba(0,0,0,0.1)');
+      darkGrad.addColorStop(1, 'rgba(0,0,0,0.5)');
+      ctx.fillStyle = darkGrad;
+      ctx.fillRect(px - r/2, py - r/2, r, r);
+      ctx.restore();
+
+      // Голографическая обводка планеты
+      ctx.strokeStyle = 'rgba(0,200,255,0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = 'rgba(0,200,255,0.2)';
+      ctx.strokeRect(px - r/2, py - r/2, r, r);
+      ctx.shadowBlur = 0;
+
       if(p.id===gameState.selectedPlanetId){
-        ctx.strokeStyle='#0ff';ctx.lineWidth=4;
-        ctx.strokeRect(x-r/2-3,y-r/2-3,r+6,r+6);
-        // Пульсирующий маркер
+        ctx.strokeStyle='rgba(0,255,255,0.7)';ctx.lineWidth=3;
+        ctx.strokeRect(px-r/2-3,py-r/2-3,r+6,r+6);
+        ctx.shadowBlur=20;ctx.shadowColor='rgba(0,255,255,0.4)';
+        ctx.stroke();ctx.shadowBlur=0;
         const t=Date.now()/500;
-        ctx.fillStyle=`rgba(0,255,255,${0.5+Math.sin(t)*0.3})`;
-        ctx.fillRect(x-4,y+r/2+4,8,8);
+        ctx.fillStyle=`rgba(0,255,255,${0.4+Math.sin(t)*0.2})`;
+        ctx.fillRect(px-4,py+r/2+4,8,8);
       }
-      // Название и гарнизон
-      ctx.fillStyle='#fff';ctx.font=`${Math.max(5,8*zoom)}px 'Press Start 2P'`;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(p.name,x,y-r/2-4);
-      ctx.fillStyle=p.type==='ally'?'#4fc3f7':p.type==='enemy'?'#f55':'#aaa';ctx.textBaseline='top';ctx.fillText(p.type==='neutral'?'○':`x${getGarrisonCount(p)}`,x,y+r/2+4);
+
+      ctx.fillStyle='#fff';
+      ctx.font=`${Math.max(5,8*zoom)}px 'Press Start 2P'`;
+      ctx.textAlign='center';
+      ctx.textBaseline='bottom';
+      ctx.shadowBlur=6;
+      ctx.shadowColor='rgba(0,200,255,0.4)';
+      ctx.fillText(p.name,px,py-r/2-4);
+      ctx.shadowBlur=0;
+
+      ctx.fillStyle=p.type==='ally'?'#4fc3f7':p.type==='enemy'?'#f55':'#aaa';
+      ctx.textBaseline='top';
+      ctx.fillText(p.type==='neutral'?'○':`x${getGarrisonCount(p)}`,px,py+r/2+4);
     });
 
-    // ===== ЛЕТЯЩИЕ ГРУППЫ =====
-    flyingGroups.forEach(g=>{const fx=ccx+(g.x-cx)*zoom,fy=ccy+(g.y-cy)*zoom;ctx.fillStyle=g.owner==='humanity'?'#4af':'#f44';ctx.fillRect(fx-3,fy-3,6,6);ctx.fillStyle='#fff';ctx.font=`${Math.max(5,8*zoom)}px 'Press Start 2P'`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(g.units.length,fx,fy-7);});
+    // Летящие группы (голографические)
+    flyingGroups.forEach(g=>{const fx=ccx+(g.x-cx)*zoom,fy=ccy+(g.y-cy)*zoom;ctx.fillStyle='rgba(0,150,255,0.6)';ctx.shadowBlur=12;ctx.shadowColor='rgba(0,200,255,0.4)';ctx.fillRect(fx-4,fy-4,8,8);ctx.shadowBlur=0;ctx.strokeStyle='rgba(0,255,255,0.8)';ctx.lineWidth=1;ctx.strokeRect(fx-4,fy-4,8,8);ctx.fillStyle='#fff';ctx.font=`${Math.max(5,8*zoom)}px 'Press Start 2P'`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowBlur=4;ctx.shadowColor='rgba(0,255,255,0.5)';ctx.fillText(g.units.length,fx,fy-8);ctx.shadowBlur=0;});
     updateUIStats();
   }
 
@@ -541,9 +628,9 @@
   function toggleUnit(mode,i){const p=planets.find(pl=>pl.id===gameState.selectedPlanetId);if(!p||p.type!=='ally')return;const al=p.garrison.filter(u=>u.hp>0);if(i>=al.length)return;const squad=mode==='attack'?gameState.attackSquad:gameState.transferSquad;const pos=squad.indexOf(i);if(pos>=0){squad.splice(pos,1);}else{if(squad.length<6){squad.push(i);}else{addLog('МАКС 6!');return;}}updateUI();}
   function updateUI(){const el=document.getElementById('squadInfo');if(gameState.mode==='attack')el.textContent=gameState.attackSquad.length>0?`АТАКА: ${gameState.attackSquad.length}/6`:'';else if(gameState.mode==='transfer')el.textContent=gameState.transferSquad.length>0?`ПЕРЕБРОС: ${gameState.transferSquad.length}/6`:'';else el.textContent='ТАП ДЛЯ ВЫБОРА';updateGarrisonDisplay();}
   function updateGarrisonDisplay(){const p=planets.find(pl=>pl.id===gameState.selectedPlanetId);if(!p)return;const g=document.getElementById('garrisonGrid');g.innerHTML='';const al=p.garrison.filter(u=>u.hp>0);if(al.length===0){g.innerHTML='<div class="garrison-unit" style="grid-column:1/-1;">-</div>';return;}al.forEach((u,i)=>{const ut=UNIT_TYPES[u.type];const d=document.createElement('div');d.className='garrison-unit';if(gameState.mode==='attack'&&gameState.attackSquad.includes(i))d.classList.add('selected-for-attack');if(gameState.mode==='transfer'&&gameState.transferSquad.includes(i))d.classList.add('selected-for-transfer');const c2=document.createElement('canvas');c2.width=24;c2.height=24;drawUnitSprite(c2.getContext('2d'),u.type,12,12,20);d.appendChild(c2);const nameEl=document.createElement('div');nameEl.style.fontSize='5px';nameEl.textContent=ut.name;d.appendChild(nameEl);const hpEl=document.createElement('div');hpEl.style.fontSize='5px';hpEl.textContent=`HP:${u.hp}`;d.appendChild(hpEl);d.addEventListener('click',(e)=>{e.stopPropagation();toggleUnit(gameState.mode==='none'?'attack':gameState.mode,i);});g.appendChild(d);});}
-  function updateRecruitGrid(){const p=planets.find(pl=>pl.id===gameState.selectedPlanetId);const g=document.getElementById('recruitGrid');g.innerHTML='';if(!p||p.type!=='ally'){g.innerHTML='<div style="grid-column:1/-1;color:#aaa;text-align:center;font-size:6px;">ТОЛЬКО АЛЬЯНС</div>';return;}['marine','heavy','sniper','engineer','fighter','bomber','destroyer'].forEach(type=>{const ut=UNIT_TYPES[type];const card=document.createElement('div');card.className='unit-recruit-card';const c2=document.createElement('canvas');c2.width=32;c2.height=32;drawUnitSprite(c2.getContext('2d'),type,16,16,28);card.appendChild(c2);const n=document.createElement('div');n.className='recruit-name';n.textContent=ut.name;card.appendChild(n);const c=document.createElement('div');c.className='recruit-cost';c.textContent=ut.cost+'КР';card.appendChild(c);card.addEventListener('click',(e)=>{e.stopPropagation();recruitUnit(type);});g.appendChild(card);});}
+  function updateRecruitGrid(){const p=planets.find(pl=>pl.id===gameState.selectedPlanetId);const g=document.getElementById('recruitGrid');g.innerHTML='';if(!p||p.type!=='ally'){g.innerHTML='<div style="grid-column:1/-1;color:#6af;text-align:center;font-size:6px;">ТОЛЬКО АЛЬЯНС</div>';return;}['marine','heavy','sniper','engineer','fighter','bomber','destroyer'].forEach(type=>{const ut=UNIT_TYPES[type];const card=document.createElement('div');card.className='unit-recruit-card';const c2=document.createElement('canvas');c2.width=32;c2.height=32;drawUnitSprite(c2.getContext('2d'),type,16,16,28);card.appendChild(c2);const n=document.createElement('div');n.className='recruit-name';n.textContent=ut.name;card.appendChild(n);const c=document.createElement('div');c.className='recruit-cost';c.textContent=ut.cost+'КР';card.appendChild(c);card.addEventListener('click',(e)=>{e.stopPropagation();recruitUnit(type);});g.appendChild(card);});}
   function recruitUnit(ut){if(battleState||gameState.gameOver)return;const p=planets.find(pl=>pl.id===gameState.selectedPlanetId);if(!p||p.type!=='ally')return;const utd=UNIT_TYPES[ut];if(gameState.credits<utd.cost)return addLog('НЕТ КРЕДИТОВ!');gameState.credits-=utd.cost;p.garrison.push({type:ut,hp:utd.hp,maxHp:utd.hp});addLog(`ВЕРБОВКА: ${utd.name}`);selectPlanet(p.id);saveGame();}
-  function renderEvolution(){const g=document.getElementById('evolutionGrid');g.innerHTML='';EVOLUTION.forEach(upg=>{const card=document.createElement('div');card.className='evo-card';if(gameState.purchasedUpgrades.includes(upg.id))card.classList.add('purchased');const l=upg.requires&&!gameState.purchasedUpgrades.includes(upg.requires);if(l)card.classList.add('locked');const ok=!gameState.purchasedUpgrades.includes(upg.id)&&!l&&gameState.evolutionPoints>=upg.cost;card.innerHTML=`<div class="evo-name">${upg.name}</div><div style="font-size:5px;color:#aaa;">${upg.desc}</div><div class="evo-cost">★${upg.cost}</div>`;if(ok)card.addEventListener('click',(e)=>{e.stopPropagation();purchaseUpgrade(upg);});g.appendChild(card);});}
+  function renderEvolution(){const g=document.getElementById('evolutionGrid');g.innerHTML='';EVOLUTION.forEach(upg=>{const card=document.createElement('div');card.className='evo-card';if(gameState.purchasedUpgrades.includes(upg.id))card.classList.add('purchased');const l=upg.requires&&!gameState.purchasedUpgrades.includes(upg.requires);if(l)card.classList.add('locked');const ok=!gameState.purchasedUpgrades.includes(upg.id)&&!l&&gameState.evolutionPoints>=upg.cost;card.innerHTML=`<div class="evo-name">${upg.name}</div><div style="font-size:5px;color:#6af;">${upg.desc}</div><div class="evo-cost">★${upg.cost}</div>`;if(ok)card.addEventListener('click',(e)=>{e.stopPropagation();purchaseUpgrade(upg);});g.appendChild(card);});}
   function purchaseUpgrade(upg){if(gameState.purchasedUpgrades.includes(upg.id))return;if(upg.requires&&!gameState.purchasedUpgrades.includes(upg.requires))return;if(gameState.evolutionPoints<upg.cost)return addLog('НЕТ ЭВО!');gameState.evolutionPoints-=upg.cost;gameState.purchasedUpgrades.push(upg.id);if(upg.effect.ac)gameState.modifiers.ac+=upg.effect.ac;if(upg.effect.atk)gameState.modifiers.atk+=upg.effect.atk;if(upg.effect.enemyDebuff)gameState.modifiers.enemyDebuff+=upg.effect.enemyDebuff;if(upg.effect.corePerTurn)gameState.modifiers.corePerTurn+=upg.effect.corePerTurn;if(upg.effect.maxCore)gameState.maxCoreEnergy+=upg.effect.maxCore;addLog(`ИССЛЕДОВАНО: ${upg.name}!`);renderEvolution();}
 
   document.getElementById('btnAttack').addEventListener('click',()=>{if(battleState||gameState.gameOver)return;const p=planets.find(pl=>pl.id===gameState.selectedPlanetId);if(!p||p.type!=='ally')return addLog('ТОЛЬКО АЛЬЯНС!');if(gameState.mode==='attack'){resetState();updateUI();return;}gameState.mode='attack';gameState.transferSquad=[];document.getElementById('btnAttack').textContent=gameState.attackSquad.length>0?'⚔ ТАП ЦЕЛЬ':'⚔ ОТМЕНА';document.getElementById('btnTransfer').textContent='📦 ПЕРЕБРОС';updateUI();});
@@ -553,32 +640,10 @@
   document.getElementById('btnNextTurn').addEventListener('click',nextTurn);
   function nextTurn(){if(battleState)return addLog('ИДЁТ БИТВА!');if(gameState.mode!=='none')return addLog('ЗАВЕРШИ ДЕЙСТВИЕ!');if(gameState.gameOver)return;gameState.turn++;gameState.wave++;passiveCoreGeneration();const al=planets.filter(p=>p.type==='ally');gameState.credits+=al.length*10+5;al.forEach(p=>{if(p.special?.bonus==='credits')gameState.credits+=p.special.value;});const ep=planets.find(p=>p.type==='enemy');if(ep){if(gameState.wave%5===0){const ts=['invader','roach','leviathan'];if(gameState.wave>=12)ts.push('leviathan_maw');if(gameState.wave>=20)ts.push('big_leviathan');ep.garrison.push({type:ts[Math.floor(Math.random()*ts.length)],hp:UNIT_TYPES[ts[0]].hp,maxHp:UNIT_TYPES[ts[0]].hp});}if(al.length>0&&ep.garrison.filter(u=>u.hp>0).length>4&&gameState.wave%4===0){let t=al.reduce((a,b)=>getGarrisonCount(a)<getGarrisonCount(b)?a:b);const att=[],rem=[];ep.garrison.forEach(u=>{if(u.hp>0&&att.length<3){att.push({...u});u.hp=0;}else if(u.hp>0)rem.push(u);});ep.garrison=rem;flyingGroups.push({owner:'enemy',targetId:t.id,units:att,progress:0,x:ep.x,y:ep.y,tx:t.x,ty:t.y});addLog(`ВРАГ АТАКУЕТ ${t.name}!`);}}checkGameOver();addLog(`ЦИКЛ ${gameState.turn}`);saveGame();}
 
-  function startBattle(planet,units,owner){
-    if(battleState||gameState.gameOver)return;
-    let allyUnits, enemyUnits;
-    if(owner==='humanity'){allyUnits=units.filter(u=>u.hp>0).map((u,i)=>({...u,id:'a'+i,side:'ally',acted:false,defending:false}));enemyUnits=planet.garrison.filter(u=>u.hp>0).map((u,i)=>({...u,id:'e'+i,side:'enemy'}));}
-    else{allyUnits=planet.garrison.filter(u=>u.hp>0).map((u,i)=>({...u,id:'a'+i,side:'ally',acted:false,defending:false}));enemyUnits=units.filter(u=>u.hp>0).map((u,i)=>({...u,id:'e'+i,side:'enemy'}));}
-    if(owner==='humanity'&&enemyUnits.length===0&&planet.type==='neutral'){capturePlanet(planet,allyUnits);return;}
-    document.getElementById('battle-overlay').style.display='flex';
-    document.getElementById('battle-title').textContent=`* ПРОТИВНИК: ${planet.name}`;
-    battleState={planet,allyUnits,enemyUnits,isPlayerTurn:true,round:1,selectedAllies:[],selectedEnemy:null,menuMode:'main'};
-    renderBattleUI();setBattleText('* Выбери действие.');checkBattleStuck();
-  }
+  function startBattle(planet,units,owner){if(battleState||gameState.gameOver)return;let allyUnits,enemyUnits;if(owner==='humanity'){allyUnits=units.filter(u=>u.hp>0).map((u,i)=>({...u,id:'a'+i,side:'ally',acted:false,defending:false}));enemyUnits=planet.garrison.filter(u=>u.hp>0).map((u,i)=>({...u,id:'e'+i,side:'enemy'}));}else{allyUnits=planet.garrison.filter(u=>u.hp>0).map((u,i)=>({...u,id:'a'+i,side:'ally',acted:false,defending:false}));enemyUnits=units.filter(u=>u.hp>0).map((u,i)=>({...u,id:'e'+i,side:'enemy'}));}if(owner==='humanity'&&enemyUnits.length===0&&planet.type==='neutral'){capturePlanet(planet,allyUnits);return;}document.getElementById('battle-overlay').style.display='flex';document.getElementById('battle-title').textContent=`* ПРОТИВНИК: ${planet.name}`;battleState={planet,allyUnits,enemyUnits,isPlayerTurn:true,round:1,selectedAllies:[],selectedEnemy:null,menuMode:'main'};renderBattleUI();setBattleText('* Выбери действие.');checkBattleStuck();}
   function checkBattleStuck(){if(!battleState)return;if(!battleState.allyUnits.some(u=>u.hp>0)){endBattle(false);return;}if(!battleState.enemyUnits.some(u=>u.hp>0)){endBattle(true);return;}if(battleState.isPlayerTurn&&battleState.allyUnits.every(u=>u.acted||u.hp<=0)){setBattleText('* Все юниты действовали. Ход врага...');battleState.isPlayerTurn=false;renderBattleMenu();setTimeout(executeEnemyTurn,600);}}
-  function renderBattleUI(){
-    const ea=document.getElementById('battleEnemyArea');ea.innerHTML='';if(!battleState)return;
-    battleState.enemyUnits.forEach(e=>{if(e.hp<=0)return;const d=document.createElement('div');d.className='enemy-sprite';const c=document.createElement('canvas');c.width=48;c.height=48;drawUnitSprite(c.getContext('2d'),e.type,24,24,44);d.appendChild(c);if(battleState.selectedEnemy===e.id)d.classList.add('selected');const info=document.createElement('div');info.className='enemy-info';info.textContent=`${UNIT_TYPES[e.type].name}`;d.appendChild(info);const hpBar=document.createElement('div');hpBar.className='enemy-hp-bar';const hpFill=document.createElement('div');hpFill.className='enemy-hp-fill';hpFill.style.width=(e.hp/e.maxHp*100)+'%';hpBar.appendChild(hpFill);d.appendChild(hpBar);const hpText=document.createElement('div');hpText.className='enemy-info';hpText.textContent=`${e.hp}/${e.maxHp}`;d.appendChild(hpText);d.addEventListener('click',()=>onEnemyClick(e.id));ea.appendChild(d);});
-    const aa=document.getElementById('battleAllyArea');aa.innerHTML='';
-    battleState.allyUnits.forEach(a=>{if(a.hp<=0)return;const d=document.createElement('div');d.className='ally-sprite';const c=document.createElement('canvas');c.width=40;c.height=40;drawUnitSprite(c.getContext('2d'),a.type,20,20,36);d.appendChild(c);if(battleState.selectedAllies.includes(a.id))d.classList.add('selected');if(a.acted)d.classList.add('acted');const info=document.createElement('div');info.className='ally-info';info.textContent=`${UNIT_TYPES[a.type].name}`;d.appendChild(info);const hpBar=document.createElement('div');hpBar.className='ally-hp-bar';const hpFill=document.createElement('div');hpFill.className='ally-hp-fill';const hpPct=a.hp/a.maxHp;if(hpPct<0.3)hpFill.classList.add('low');else if(hpPct<0.6)hpFill.classList.add('medium');hpFill.style.width=(hpPct*100)+'%';hpBar.appendChild(hpFill);d.appendChild(hpBar);const hpText=document.createElement('div');hpText.className='ally-info';hpText.textContent=`${a.hp}/${a.maxHp}`;d.appendChild(hpText);d.addEventListener('click',()=>onAllyClick(a.id));aa.appendChild(d);});
-    renderBattleMenu();
-  }
-  function renderBattleMenu(){
-    const menu=document.getElementById('battleMenu');menu.innerHTML='';if(!battleState)return;
-    if(!battleState.isPlayerTurn){menu.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#aaa;">ОЖИДАНИЕ...</div>';return;}
-    const hasActable=battleState.allyUnits.some(u=>u.hp>0&&!u.acted);const hasEnemies=battleState.enemyUnits.some(u=>u.hp>0);
-    if(!hasActable||!hasEnemies){menu.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#aaa;">НЕТ ДОСТУПНЫХ ДЕЙСТВИЙ</div>';return;}
-    if(battleState.menuMode==='main'){menu.innerHTML=`<button class="battle-menu-btn" id="btnFight">⚔ АТАКА (${battleState.selectedAllies.length})</button><button class="battle-menu-btn" id="btnDefend">🛡 ЗАЩИТА (${battleState.selectedAllies.length})</button><button class="battle-menu-btn" id="btnRetreat">🏃 БЕЖАТЬ</button><button class="battle-menu-btn" id="btnEndTurn">⏭ КОНЕЦ ХОДА</button>`;document.getElementById('btnFight').addEventListener('click',()=>{if(battleState.selectedAllies.length===0){setBattleText('* Выбери хотя бы одного юнита!');return;}battleState.menuMode='fight';setBattleText('* Выбери врага для атаки.');renderBattleUI();});document.getElementById('btnDefend').addEventListener('click',()=>{if(battleState.selectedAllies.length===0){setBattleText('* Выбери хотя бы одного юнита!');return;}executeDefend();battleState.menuMode='main';battleState.selectedAllies=[];renderBattleUI();renderBattleMenu();checkBattleStuck();});document.getElementById('btnRetreat').addEventListener('click',()=>endBattle(false,true));document.getElementById('btnEndTurn').addEventListener('click',()=>{battleState.isPlayerTurn=false;battleState.allyUnits.forEach(a=>a.defending=false);battleState.selectedAllies=[];setBattleText('* Ход врага...');renderBattleMenu();setTimeout(executeEnemyTurn,600);});}
-  }
+  function renderBattleUI(){const ea=document.getElementById('battleEnemyArea');ea.innerHTML='';if(!battleState)return;battleState.enemyUnits.forEach(e=>{if(e.hp<=0)return;const d=document.createElement('div');d.className='enemy-sprite';const c=document.createElement('canvas');c.width=48;c.height=48;drawUnitSprite(c.getContext('2d'),e.type,24,24,44);d.appendChild(c);if(battleState.selectedEnemy===e.id)d.classList.add('selected');const info=document.createElement('div');info.className='enemy-info';info.textContent=`${UNIT_TYPES[e.type].name}`;d.appendChild(info);const hpBar=document.createElement('div');hpBar.className='enemy-hp-bar';const hpFill=document.createElement('div');hpFill.className='enemy-hp-fill';hpFill.style.width=(e.hp/e.maxHp*100)+'%';hpBar.appendChild(hpFill);d.appendChild(hpBar);const hpText=document.createElement('div');hpText.className='enemy-info';hpText.textContent=`${e.hp}/${e.maxHp}`;d.appendChild(hpText);d.addEventListener('click',()=>onEnemyClick(e.id));ea.appendChild(d);});const aa=document.getElementById('battleAllyArea');aa.innerHTML='';battleState.allyUnits.forEach(a=>{if(a.hp<=0)return;const d=document.createElement('div');d.className='ally-sprite';const c=document.createElement('canvas');c.width=40;c.height=40;drawUnitSprite(c.getContext('2d'),a.type,20,20,36);d.appendChild(c);if(battleState.selectedAllies.includes(a.id))d.classList.add('selected');if(a.acted)d.classList.add('acted');const info=document.createElement('div');info.className='ally-info';info.textContent=`${UNIT_TYPES[a.type].name}`;d.appendChild(info);const hpBar=document.createElement('div');hpBar.className='ally-hp-bar';const hpFill=document.createElement('div');hpFill.className='ally-hp-fill';const hpPct=a.hp/a.maxHp;if(hpPct<0.3)hpFill.classList.add('low');else if(hpPct<0.6)hpFill.classList.add('medium');hpFill.style.width=(hpPct*100)+'%';hpBar.appendChild(hpFill);d.appendChild(hpBar);const hpText=document.createElement('div');hpText.className='ally-info';hpText.textContent=`${a.hp}/${a.maxHp}`;d.appendChild(hpText);d.addEventListener('click',()=>onAllyClick(a.id));aa.appendChild(d);});renderBattleMenu();}
+  function renderBattleMenu(){const menu=document.getElementById('battleMenu');menu.innerHTML='';if(!battleState)return;if(!battleState.isPlayerTurn){menu.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#6af;">ОЖИДАНИЕ...</div>';return;}const hasActable=battleState.allyUnits.some(u=>u.hp>0&&!u.acted);const hasEnemies=battleState.enemyUnits.some(u=>u.hp>0);if(!hasActable||!hasEnemies){menu.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#6af;">НЕТ ДОСТУПНЫХ ДЕЙСТВИЙ</div>';return;}if(battleState.menuMode==='main'){menu.innerHTML=`<button class="battle-menu-btn" id="btnFight">⚔ АТАКА (${battleState.selectedAllies.length})</button><button class="battle-menu-btn" id="btnDefend">🛡 ЗАЩИТА (${battleState.selectedAllies.length})</button><button class="battle-menu-btn" id="btnRetreat">🏃 БЕЖАТЬ</button><button class="battle-menu-btn" id="btnEndTurn">⏭ КОНЕЦ ХОДА</button>`;document.getElementById('btnFight').addEventListener('click',()=>{if(battleState.selectedAllies.length===0){setBattleText('* Выбери хотя бы одного юнита!');return;}battleState.menuMode='fight';setBattleText('* Выбери врага для атаки.');renderBattleUI();});document.getElementById('btnDefend').addEventListener('click',()=>{if(battleState.selectedAllies.length===0){setBattleText('* Выбери хотя бы одного юнита!');return;}executeDefend();battleState.menuMode='main';battleState.selectedAllies=[];renderBattleUI();renderBattleMenu();checkBattleStuck();});document.getElementById('btnRetreat').addEventListener('click',()=>endBattle(false,true));document.getElementById('btnEndTurn').addEventListener('click',()=>{battleState.isPlayerTurn=false;battleState.allyUnits.forEach(a=>a.defending=false);battleState.selectedAllies=[];setBattleText('* Ход врага...');renderBattleMenu();setTimeout(executeEnemyTurn,600);});}}
   function onAllyClick(id){if(!battleState||!battleState.isPlayerTurn)return;const u=battleState.allyUnits.find(a=>a.id===id);if(!u||u.acted||u.hp<=0)return;if(battleState.menuMode==='main'){const idx=battleState.selectedAllies.indexOf(id);if(idx>=0){battleState.selectedAllies.splice(idx,1);}else{battleState.selectedAllies.push(id);}renderBattleUI();renderBattleMenu();}}
   function onEnemyClick(id){if(!battleState||!battleState.isPlayerTurn)return;if(battleState.menuMode==='fight'){battleState.selectedEnemy=id;const df=battleState.enemyUnits.find(e=>e.id===id);if(!df||df.hp<=0)return;battleState.selectedAllies.forEach(aid=>{const at=battleState.allyUnits.find(a=>a.id===aid);if(at&&at.hp>0&&!at.acted){executeBattleAttack(at,df);at.acted=true;}});battleState.selectedAllies=[];battleState.selectedEnemy=null;battleState.menuMode='main';renderBattleUI();renderBattleMenu();checkBattleStuck();}}
   function executeDefend(){battleState.selectedAllies.forEach(aid=>{const u=battleState.allyUnits.find(a=>a.id===aid);if(!u||u.acted||u.hp<=0)return;const roll=rollD20();const total=roll+gameState.modifiers.ac;showD20Popup(roll,roll>=20,roll===1);u.defending=true;u.acted=true;if(roll>=20){u.hp=Math.min(u.maxHp,u.hp+10);setBattleText(`* КРИТ! ${UNIT_TYPES[u.type].name} +10 HP!`);}else if(roll===1){setBattleText(`* ПРОВАЛ! ${UNIT_TYPES[u.type].name} не смог защититься.`);}else if(total>=15){u.hp=Math.min(u.maxHp,u.hp+5);setBattleText(`* ${UNIT_TYPES[u.type].name} +5 HP!`);}else{setBattleText(`* ${UNIT_TYPES[u.type].name} в защите.`);}if(u.type==='engineer'&&total>=15){const al=battleState.allyUnits.filter(a=>a.hp>0&&a.hp<a.maxHp);if(al.length>0){const t=al[Math.floor(Math.random()*al.length)];t.hp=Math.min(t.maxHp,t.hp+5);setBattleText(`* Инженер чинит ${UNIT_TYPES[t.type].name}! +5 HP`);}}});}
@@ -587,23 +652,16 @@
   function rollD20(){return Math.floor(Math.random()*20)+1;}
   function showD20Popup(r,crit,fail){const p=document.getElementById('d20Popup');p.style.display='flex';const i=document.getElementById('d20PopupInner');document.getElementById('d20PopupNum').textContent=r;i.className='d20-popup-inner';if(crit)i.classList.add('crit');setTimeout(()=>{p.style.display='none';i.className='d20-popup-inner';},700);}
   function setBattleText(t){document.getElementById('battleText').textContent=t;}
-  function endBattle(isWin,retreat=false){
-    if(!battleState)return;
-    const p=battleState.planet;const survivors=battleState.allyUnits.filter(u=>u.hp>0).map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp}));const planetId=p.id;
-    let ti,tx;
-    if(isWin){if(p.type==='enemy'){if(survivors.length>0){capturePlanet(p,survivors);ti='ПОБЕДА!';tx=`${p.name} захвачена!`;}else{addLog('НИЧЬЯ');p.garrison=[];ti='НИЧЬЯ';tx='Враги уничтожены.';}}else if(p.type==='neutral'){capturePlanet(p,survivors);ti='ПОБЕДА!';tx=`${p.name} захвачена!`;}else{p.garrison=survivors;addLog('ЗАЩИЩЕНА');ti='ПОБЕДА!';tx='Атака отбита!';}}
-    else{if(p.type==='ally'){p.garrison=[];p.type='neutral';addLog('ПОТЕРЯНА!');ti='ПОРАЖЕНИЕ';tx=`${p.name} потеряна!`;}else if(p.type==='neutral'){p.garrison=battleState.enemyUnits.filter(u=>u.hp>0).map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp}));p.type='enemy';addLog('ВРАГ ЗАХВАТИЛ');ti='ПОРАЖЕНИЕ';tx='Враг захватил планету!';}checkGameOver();}
-    battleState=null;document.getElementById('battle-overlay').style.display='none';resetState();selectPlanet(planetId);showNotification(ti,tx);
-  }
-  function showNotification(ti,tx){document.getElementById('notifTitle').textContent=ti;document.getElementById('notifTitle').style.color=ti.includes('ПОБЕДА')||ti==='НИЧЬЯ'?'#0ff':'#f44';document.getElementById('notifText').textContent=tx;document.getElementById('btnNewGame').style.display=gameState.gameOver?'inline-block':'none';document.getElementById('notificationOverlay').style.display='flex';}
+  function endBattle(isWin,retreat=false){if(!battleState)return;const p=battleState.planet;const survivors=battleState.allyUnits.filter(u=>u.hp>0).map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp}));const planetId=p.id;let ti,tx;if(isWin){if(p.type==='enemy'){if(survivors.length>0){capturePlanet(p,survivors);ti='ПОБЕДА!';tx=`${p.name} захвачена!`;}else{addLog('НИЧЬЯ');p.garrison=[];ti='НИЧЬЯ';tx='Враги уничтожены.';}}else if(p.type==='neutral'){capturePlanet(p,survivors);ti='ПОБЕДА!';tx=`${p.name} захвачена!`;}else{p.garrison=survivors;addLog('ЗАЩИЩЕНА');ti='ПОБЕДА!';tx='Атака отбита!';}}else{if(p.type==='ally'){p.garrison=[];p.type='neutral';addLog('ПОТЕРЯНА!');ti='ПОРАЖЕНИЕ';tx=`${p.name} потеряна!`;}else if(p.type==='neutral'){p.garrison=battleState.enemyUnits.filter(u=>u.hp>0).map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp}));p.type='enemy';addLog('ВРАГ ЗАХВАТИЛ');ti='ПОРАЖЕНИЕ';tx='Враг захватил планету!';}checkGameOver();}battleState=null;document.getElementById('battle-overlay').style.display='none';resetState();selectPlanet(planetId);showNotification(ti,tx);}
+  function showNotification(ti,tx){document.getElementById('notifTitle').textContent=ti;document.getElementById('notifTitle').style.color=ti.includes('ПОБЕДА')||ti==='НИЧЬЯ'?'#0ff':'#f44';document.getElementById('notifTitle').style.textShadow='0 0 12px currentColor';document.getElementById('notifText').textContent=tx;document.getElementById('btnNewGame').style.display=gameState.gameOver?'inline-block':'none';document.getElementById('notificationOverlay').style.display='flex';}
   document.getElementById('btnCloseNotif').addEventListener('click',()=>{document.getElementById('notificationOverlay').style.display='none';});
   document.getElementById('btnNewGame').addEventListener('click',()=>{location.reload();});
   function capturePlanet(p,s){p.garrison=s;p.type='ally';gameState.evolutionPoints+=1;addLog(`ЗАХВАЧЕНА! +1 ЭВО`);}
   function checkGameOver(){const al=planets.filter(p=>p.type==='ally');const en=planets.find(p=>p.type==='enemy');if(!en||en.type==='ally'){endGame(true);return;}if(al.length===0){endGame(false);return;}}
   function endGame(isWin){gameState.gameOver=true;const al=planets.filter(p=>p.type==='ally').length;const tl=planets.filter(p=>!p.isCore).length;const ti=isWin?'ПОБЕДА!':'ПОРАЖЕНИЕ';const tx=isWin?`Все планеты захвачены! ${al}/${tl}`:`Все планеты потеряны...`;showNotification(ti,tx);}
 
-  function saveGame(){const sd={gameState:{...gameState,attackSquad:[],transferSquad:[],mode:'none'},planetsData:planets.map(p=>({id:p.id,type:p.type,ang:p.ang,garrison:p.garrison.map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp}))})),flyingGroups:flyingGroups.map(g=>({owner:g.owner,targetId:g.targetId,units:g.units.map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp})),progress:g.progress,x:g.x,y:g.y,tx:g.tx,ty:g.ty}))};localStorage.setItem('cosmicFrontV30',JSON.stringify(sd));}
-  function loadGame(){const d=localStorage.getItem('cosmicFrontV30');if(!d)return addLog('НЕТ СОХРАНЕНИЯ');try{const sd=JSON.parse(d);gameState=sd.gameState;sd.planetsData.forEach(pd=>{const p=planets.find(p=>p.id===pd.id);if(p){p.type=pd.type;p.ang=pd.ang;p.garrison=pd.garrison;}});flyingGroups=sd.flyingGroups;battleState=null;resetState();document.getElementById('battle-overlay').style.display='none';document.getElementById('notificationOverlay').style.display='none';selectPlanet(gameState.selectedPlanetId);renderEvolution();updateRecruitGrid();addLog('ЗАГРУЖЕНО');}catch(e){addLog('ОШИБКА');}}
+  function saveGame(){const sd={gameState:{...gameState,attackSquad:[],transferSquad:[],mode:'none'},planetsData:planets.map(p=>({id:p.id,type:p.type,ang:p.ang,garrison:p.garrison.map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp}))})),flyingGroups:flyingGroups.map(g=>({owner:g.owner,targetId:g.targetId,units:g.units.map(u=>({type:u.type,hp:u.hp,maxHp:u.maxHp})),progress:g.progress,x:g.x,y:g.y,tx:g.tx,ty:g.ty}))};localStorage.setItem('cosmicFrontV34',JSON.stringify(sd));}
+  function loadGame(){const d=localStorage.getItem('cosmicFrontV34');if(!d)return addLog('НЕТ СОХРАНЕНИЯ');try{const sd=JSON.parse(d);gameState=sd.gameState;sd.planetsData.forEach(pd=>{const p=planets.find(p=>p.id===pd.id);if(p){p.type=pd.type;p.ang=pd.ang;p.garrison=pd.garrison;}});flyingGroups=sd.flyingGroups;battleState=null;resetState();document.getElementById('battle-overlay').style.display='none';document.getElementById('notificationOverlay').style.display='none';selectPlanet(gameState.selectedPlanetId);renderEvolution();updateRecruitGrid();addLog('ЗАГРУЖЕНО');}catch(e){addLog('ОШИБКА');}}
   document.getElementById('btnSave').addEventListener('click',()=>{saveGame();addLog('СОХРАНЕНО');});
   document.getElementById('btnLoad').addEventListener('click',loadGame);
 
@@ -611,13 +669,7 @@
   function updateUIStats(){document.getElementById('creditsValue').textContent=gameState.credits;document.getElementById('evoPointsValue').textContent=gameState.evolutionPoints;document.getElementById('coreValue').textContent=`${gameState.coreEnergy}/${gameState.maxCoreEnergy}`;document.getElementById('waveCounter').textContent=gameState.wave;document.getElementById('turnCounter').textContent=gameState.turn;const al=planets.filter(p=>p.type==='ally').length;const tl=planets.filter(p=>!p.isCore).length;document.getElementById('planetCountValue').textContent=`${al}/${tl}`;}
   function addLog(m){const lp=document.getElementById('logPanel');const lines=lp.innerHTML.split('<br>');lines.push(m);if(lines.length>4)lines.shift();lp.innerHTML=lines.join('<br>');lp.scrollTop=lp.scrollHeight;}
 
-  function init(){
-    resizeCanvas();createStars();initGarrisons();selectPlanet(3);renderEvolution();updateRecruitGrid();
-    addLog(`v30: ОРБИТЫ + СЕНСОР`);
-    if(controlMode==='pc')addLog('[A] АТАКА [T] ПЕРЕБРОС');
-    addLog('[ПРОБЕЛ] ХОД [1-0] ПЛАНЕТЫ');
-    updateGameLoop();
-  }
+  function init(){resizeCanvas();createStars();initGarrisons();selectPlanet(3);renderEvolution();updateRecruitGrid();addLog('v34: HOLO UI + UNITS');if(controlMode==='pc')addLog('[A] АТАКА [T] ПЕРЕБРОС');addLog('[ПРОБЕЛ] ХОД [1-0] ПЛАНЕТЫ');updateGameLoop();}
 })();
 </script>
 </body>
